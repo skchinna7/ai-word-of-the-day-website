@@ -1,1 +1,0 @@
-# ai-word-of-the-day-website
