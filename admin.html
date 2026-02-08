@@ -1,33 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Admin - Word of the Day</title>
+  <meta charset="UTF-8">
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
-    <h2>Add Word</h2>
 
-    <input id="word" placeholder="Word" />
-    <input id="meaning" placeholder="Meaning" />
-    <button onclick="addWord()">Save</button>
+  <div class="container">
+    <h1>Admin Panel</h1>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script src="supabaseClient.js"></script>
-<script>
-    async function addWord() {
-    const word = document.getElementById("word").value;
-    const meaning = document.getElementById("meaning").value;
+    <input id="word" placeholder="Word"><br><br>
+    <input id="phonetic" placeholder="Phonetic"><br><br>
+    <textarea id="definition" placeholder="Definition"></textarea><br><br>
 
-    const { error } = await supabase
-        .from("words")
-        .insert([{ word, meaning }]);
+    <button onclick="saveWord()">Save Word</button>
 
-    if (error) {
-        alert("Error adding word");
-        console.error(error);
-    } else {
-        alert("Word added successfully!");
-    }
-    }
-</script>
+    <p id="status"></p>
+  </div>
+
+  <script src="admin.js"></script>
 </body>
 </html>
