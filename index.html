@@ -1,84 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dictionary - wotd.in</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Word of the Day</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 p-8">
-    <div class="max-w-2xl mx-auto">
-        <header class="flex justify-between mb-12">
-            <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Dictionary</h1>
-            <button id="theme" class="p-2 rounded-xl bg-slate-200 hover:bg-slate-300">🌙</button>
-        </header>
+<body>
 
-        <div class="relative mb-8">
-            <input id="search" class="w-full p-6 text-xl border-2 border-slate-200 dark:border-slate-700 rounded-2xl focus:border-blue-400 focus:outline-none dark:bg-slate-800" placeholder="Search for any word...">
-            <button id="btn" class="absolute right-4 top-1/2 -translate-y-1/2 p-3 hover:bg-blue-100 rounded-xl">🔍</button>
-        </div>
-
-        <div id="loading" class="hidden flex justify-center py-12"><div class="animate-spin h-8 w-8 border-b-2 border-blue-600 rounded-full"></div></div>
-        <div id="result" class="hidden space-y-6"></div>
-        <div id="error" class="hidden text-center text-slate-500 py-12"></div>
+    <div class="container">
+        <div id="word" class="word">Loading...</div>
+        <div id="phonetic" class="phonetic"></div>
+        <div id="definition" class="definition"></div>
     </div>
 
-    <script>
-        document.getElementById('btn').onclick = searchWord;
-        document.getElementById('search').onkeypress = e => e.key === 'Enter' && searchWord();
-        document.getElementById('theme').onclick = () => document.documentElement.classList.toggle('dark');
-
-        async function searchWord() {
-            const word = document.getElementById('search').value.trim();
-            if (!word) return;
-            showLoading();
-            
-            try {
-                const res = await fetch(`/api/define/${word}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    showResult(data);
-                } else {
-                    showError(word);
-                }
-            } catch {
-                showError(word);
-            }
-        }
-
-        function showResult(data) {
-            document.getElementById('result').innerHTML = `
-                <div class="flex justify-between">
-                    <h2 class="text-6xl font-light text-slate-900 dark:text-white">${data.word}</h2>
-                    <div class="flex gap-4 items-start">
-                        <span class="text-2xl text-slate-500">${data.phonetic || ''}</span>
-                        ${data.phonetics?.[0]?.audio ? `<button onclick="new Audio('${data.phonetics[0].audio}').play()" class="p-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 rounded-full mt-2">🔊</button>` : ''}
-                    </div>
-                </div>
-                ${data.meanings.map(m => `
-                    <div>
-                        <h3 class="text-lg font-semibold text-slate-600 dark:text-slate-300 capitalize">${m.partOfSpeech}</h3>
-                        <p class="text-xl mt-4 text-slate-800 dark:text-slate-200">${m.definitions[0].definition}</p>
-                        ${m.definitions[0].example ? `<p class="italic text-slate-600 dark:text-slate-400 mt-2 bg-slate-100 dark:bg-slate-800 p-4 rounded-xl">"${m.definitions[0].example}"</p>` : ''}
-                    </div>
-                `).join('')}
-            `;
-            document.getElementById('result').classList.remove('hidden');
-            document.getElementById('loading').classList.add('hidden');
-        }
-
-        function showError(word) {
-            document.getElementById('error').textContent = `"${word}" not found`;
-            document.getElementById('error').classList.remove('hidden');
-            document.getElementById('loading').classList.add('hidden');
-        }
-
-        function showLoading() { 
-            document.querySelectorAll('#result, #error').forEach(el => el.classList.add('hidden'));
-            document.getElementById('loading').classList.remove('hidden');
-        }
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-        <script src="supabaseClient.js"></script>
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
