@@ -1,13 +1,33 @@
+<!DOCTYPE html>
 <html>
+<head>
+    <title>Admin - Word of the Day</title>
+</head>
+<body>
+    <h2>Add Word</h2>
+
+    <input id="word" placeholder="Word" />
+    <input id="meaning" placeholder="Meaning" />
+    <button onclick="addWord()">Save</button>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="supabaseClient.js"></script>
 <script>
-    async function addWord(word, meaning) {
-  const { data, error } = await supabase
-    .from("words")
-    .insert([{ word, meaning }]);
+    async function addWord() {
+    const word = document.getElementById("word").value;
+    const meaning = document.getElementById("meaning").value;
 
-  if (error) console.error(error);
-  else alert("Word added!");
-}
+    const { error } = await supabase
+        .from("words")
+        .insert([{ word, meaning }]);
 
+    if (error) {
+        alert("Error adding word");
+        console.error(error);
+    } else {
+        alert("Word added successfully!");
+    }
+    }
 </script>
+</body>
 </html>
