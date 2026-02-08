@@ -1,25 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
   <title>Admin Panel</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
 
-  <div class="container">
-    <h1>Admin Panel</h1>
+<input id="word" placeholder="Word"><br><br>
+<input id="phonetic" placeholder="Phonetic"><br><br>
+<textarea id="definition" placeholder="Definition"></textarea><br><br>
 
-    <input id="word" placeholder="Word"><br><br>
-    <input id="phonetic" placeholder="Phonetic"><br><br>
-    <textarea id="definition" placeholder="Definition"></textarea><br><br>
+<button onclick="saveWord()">Save</button>
 
-    <button onclick="saveWord()">Save Word</button>
+<p id="status"></p>
 
-    <p id="status"></p>
-  </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <script src="admin.js"></script>
+<script>
+const SUPABASE_URL = "https://vikzesimclynhzhavdrl.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpa3plc2ltY2x5bmh6aGF2ZHJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcyNDgsImV4cCI6MjA4NTM5MzI0OH0.k44Eibz2i7VD2rA-JGZu_v0s3t3ruKdxHr6qZx-U1MQ";
+
+const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+async function saveWord() {
+  const word = document.getElementById("word").value;
+  const phonetic = document.getElementById("phonetic").value;
+  const definition = document.getElementById("definition").value;
+
+  const { error } = await supabase
+    .from("words")
+    .insert([{ word, phonetic, definition }]);
+
+  document.getElementById("status").textContent =
+    error ? error.message : "Saved successfully!";
+}
+</script>
+
 </body>
 </html>
