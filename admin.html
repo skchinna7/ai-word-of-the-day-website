@@ -1,0 +1,13 @@
+<html>
+<script>
+    async function addWord(word, meaning) {
+  const { data, error } = await supabase
+    .from("words")
+    .insert([{ word, meaning }]);
+
+  if (error) console.error(error);
+  else alert("Word added!");
+}
+
+</script>
+</html>
