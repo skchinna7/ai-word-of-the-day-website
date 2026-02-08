@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word of the Day</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Georgia', serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        #word {
+            font-size: 5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        #phonetic {
+            font-size: 2rem;
+            color: #999;
+            font-style: italic;
+            margin-bottom: 2rem;
+        }
+
+        #definition {
+            font-size: 1.5rem;
+            line-height: 1.8;
+            color: #ddd;
+            font-family: 'Arial', sans-serif;
+            font-weight: 300;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #999;
+        }
+
+        .error {
+            background-color: #ff000020;
+            border: 1px solid #ff0000;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 20px;
+            text-align: center;
+            width: 100%;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            #word {
+                font-size: 3rem;
+            }
+            
+            #phonetic {
+                font-size: 1.5rem;
+            }
+            
+            #definition {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loading" class="loading">Loading word of the day...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="content" style="display: none;">
+            <h1 id="word"></h1>
+            <p id="phonetic"></p>
+            <p id="definition"></p>
+        </div>
+    </div>
+
+    <footer>
+        Word of the Day • <span id="date"></span>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = "https://vikzesimclynhzhavdrl.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpa3plc2ltY2x5bmh6aGF2ZHJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcyNDgsImV4cCI6MjA4NTM5MzI0OH0.k44Eibz2i7VD2rA-JGZu_v0s3t3ruKdxHr6qZx-U1MQ";
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Show today's date
+        document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        async function loadWord() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const content = document.getElementById('content');
+            
+            try {
+                console.log('✅ Connecting to Supabase...');
+                console.log('📅 Today:', new Date().toISOString().split('T')[0]);
+                
+                // Get today's date
+                const today = new Date().toISOString().split('T')[0];
+                
+                // Try to get word for today
+                let { data, error: fetchError } = await supabase
+                    .from('words')
+                    .select('*')
+                    .eq('scheduled_date', today)
+                    .limit(1);
+
+                console.log('Response:', data, fetchError);
+
+                if (fetchError || !data || data.length === 0) {
+                    console.log('⚠️ No word for today, getting latest...');
+                    
+                    // If no word for today, get the latest word
+                    const { data: latestData, error: latestError } = await supabase
+                        .from('words')
+                        .select('*')
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+
+                    if (latestError || !latestData || latestData.length === 0) {
+                        throw new Error('No words found in database. Please add words via admin panel.');
+                    }
+                    
+                    data = latestData;
+                }
+
+                displayWord(data[0]);
+                loading.style.display = 'none';
+                content.style.display = 'block';
+                
+            } catch (err) {
+                console.error('❌ Error:', err);
+                loading.style.display = 'none';
+                error.style.display = 'block';
+                error.innerHTML = `
+                    <h2>⚠️ Error Loading Word</h2>
+                    <p>${err.message}</p>
+                    <p style="margin-top: 10px; font-size: 0.9rem;">
+                        <a href="admin.html" style="color: #4CAF50;">Go to Admin Panel</a> to add words
+                    </p>
+                `;
+            }
+        }
+
+        function displayWord(wordData) {
+            console.log('📝 Displaying word:', wordData);
+            document.getElementById('word').textContent = wordData.word || 'Word';
+            document.getElementById('phonetic').textContent = 
+                wordData.phonetic || wordData.pronunciation ? 
+                `/${wordData.phonetic || wordData.pronunciation}/` : '';
+            document.getElementById('definition').textContent = 
+                wordData.definition || wordData.meaning || 'No definition available';
+        }
+
+        // Load word when page loads
+        loadWord();
+    </script>
+</body>
+</html>
