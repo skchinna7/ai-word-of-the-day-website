@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Favorites</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Georgia", serif;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        body.light {
+            background: #fff;
+            color: #000;
+        }
+
+        body.dark {
+            background: #000;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        h1 {
+            font-size: 48px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: 2px solid;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            background: transparent;
+        }
+
+        body.light .btn {
+            border-color: #000;
+            color: #000;
+        }
+
+        body.dark .btn {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        body.light .btn:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        body.dark .btn:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .stats {
+            margin-bottom: 30px;
+            font-size: 16px;
+            opacity: 0.7;
+        }
+
+        .words-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .word-card {
+            padding: 30px;
+            border: 1px solid;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: fadeIn 0.5s ease-in;
+            position: relative;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body.light .word-card {
+            border-color: #ddd;
+            background: #fafafa;
+        }
+
+        body.dark .word-card {
+            border-color: #333;
+            background: #111;
+        }
+
+        .word-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            background: #ff4757;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .remove-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .word-category {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-bottom: 10px;
+            background: #4CAF50;
+            color: #fff;
+        }
+
+        .word-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .word-meaning {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.8;
+            margin-bottom: 15px;
+        }
+
+        .word-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            opacity: 0.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 24px;
+            opacity: 0.5;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 60px;
+            opacity: 0.5;
+        }
+
+        .theme-toggle {
+            width: 50px;
+            height: 26px;
+            background: #ccc;
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .theme-toggle.active {
+            background: #000;
+        }
+
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s;
+        }
+
+        .theme-toggle.active::before {
+            transform: translateX(24px);
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 32px; }
+            .words-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="dark">
+    <div class="container">
+        <div class="header">
+            <h1>❤️ My Favorites</h1>
+            <div class="controls">
+                <div class="theme-toggle" id="themeToggle"></div>
+                <a href="index.html" class="btn">← Home</a>
+            </div>
+        </div>
+
+        <div class="stats" id="stats">Loading...</div>
+
+        <div id="content">
+            <div class="loading">Loading your favorites...</div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module">
+        const SUPABASE_URL = "https://qzatavslhtkioivemwlk.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
+
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentUser = null;
+        let favorites = [];
+
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.body.className = savedTheme;
+        if (savedTheme === 'dark') themeToggle.classList.add('active');
+
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.body.classList.contains('dark');
+            document.body.className = isDark ? 'light' : 'dark';
+            themeToggle.classList.toggle('active');
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+        });
+
+        // Check auth
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            currentUser = session?.user;
+
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            loadFavorites();
+        }
+
+        // Load favorites
+        async function loadFavorites() {
+            try {
+                const { data, error } = await supabase
+                    .from('favorites')
+                    .select(`
+                        *,
+                        words (*)
+                    `)
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                favorites = data || [];
+                displayFavorites();
+
+            } catch (err) {
+                console.error('Error:', err);
+                document.getElementById('content').innerHTML = `
+                    <div class="empty">
+                        <p>Error loading favorites: ${err.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayFavorites() {
+            const content = document.getElementById('content');
+            
+            document.getElementById('stats').textContent = 
+                `${favorites.length} favorite word${favorites.length !== 1 ? 's' : ''}`;
+
+            if (favorites.length === 0) {
+                content.innerHTML = `
+                    <div class="empty">
+                        <p>You haven't favorited any words yet</p>
+                        <p style="margin-top: 20px;">
+                            <a href="index.html" class="btn">Explore words</a>
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'words-grid';
+
+            favorites.forEach(fav => {
+                const word = fav.words;
+                const card = document.createElement('div');
+                card.className = 'word-card';
+                
+                const date = new Date(fav.created_at);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+                card.innerHTML = `
+                    <button class="remove-btn" onclick="removeFavorite('${fav.id}')" title="Remove from favorites">×</button>
+                    ${word.category ? `<div class="word-category">${word.category}</div>` : ''}
+                    <div class="word-title">${word.word}</div>
+                    <div class="word-meaning">${word.meaning}</div>
+                    <div class="word-meta">
+                        <span>💾 Saved: ${formattedDate}</span>
+                        <span>👁️ ${word.views || 0} views</span>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+
+            content.innerHTML = '';
+            content.appendChild(grid);
+        }
+
+        // Remove favorite
+        window.removeFavorite = async function(favoriteId) {
+            if (!confirm('Remove this word from favorites?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('favorites')
+                    .delete()
+                    .eq('id', favoriteId);
+
+                if (error) throw error;
+
+                loadFavorites();
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to remove favorite');
+            }
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>
