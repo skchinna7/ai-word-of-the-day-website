@@ -59,7 +59,6 @@
     </div>
 
     <script type="module">
-        // Using fetch directly - no external libraries needed!
         const SUPABASE_URL = "https://vikzesimclynhzhavdrl.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpa3plc2ltY2x5bmh6aGF2ZHJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcyNDgsImV4cCI6MjA4NTM5MzI0OH0.k44Eibz2i7VD2rA-JGZu_v0s3t3ruKdxHr6qZx-U1MQ";
 
@@ -83,20 +82,21 @@
 
                 if (!data || data.length === 0) {
                     document.getElementById('word').textContent = 'No Words Yet';
-                    document.getElementById('definition').textContent = 'Add words via admin panel';
+                    document.getElementById('definition').textContent = 'Add words via admin.html';
                     return;
                 }
 
                 const word = data[0];
                 document.getElementById('word').textContent = word.word || 'Word';
                 document.getElementById('phonetic').textContent = word.phonetic ? `/${word.phonetic}/` : '';
-                document.getElementById('definition').textContent = word.definition || word.meaning || 'No definition';
+                // Try both 'meaning' and 'definition' columns
+                document.getElementById('definition').textContent = word.meaning || word.definition || 'No definition';
 
             } catch (err) {
                 console.error('Error:', err);
                 document.getElementById('word').textContent = 'Error';
                 document.getElementById('phonetic').textContent = '';
-                document.getElementById('definition').textContent = err.message + ' - Check console (F12)';
+                document.getElementById('definition').textContent = err.message;
             }
         }
 
