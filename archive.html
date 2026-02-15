@@ -32,7 +32,6 @@
             margin: 0 auto;
         }
 
-        /* Header */
         .header {
             display: flex;
             justify-content: space-between;
@@ -60,18 +59,17 @@
             transition: all 0.3s ease;
             text-decoration: none;
             display: inline-block;
+            background: transparent;
         }
 
         body.light .btn {
             border-color: #000;
             color: #000;
-            background: transparent;
         }
 
         body.dark .btn {
             border-color: #fff;
             color: #fff;
-            background: transparent;
         }
 
         .btn:hover {
@@ -88,50 +86,103 @@
             color: #000;
         }
 
-        /* Search */
-        .search-box {
-            margin-bottom: 40px;
+        /* Filters */
+        .filters {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
         }
 
-        .search-input {
-            width: 100%;
-            max-width: 600px;
-            padding: 15px 20px;
-            font-size: 18px;
+        .search-input, .category-select {
+            padding: 12px 20px;
+            font-size: 16px;
             border: 2px solid;
-            border-radius: 30px;
+            border-radius: 25px;
             font-family: inherit;
             transition: all 0.3s ease;
         }
 
-        body.light .search-input {
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .category-select {
+            min-width: 150px;
+        }
+
+        body.light .search-input,
+        body.light .category-select {
             background: #fff;
             color: #000;
             border-color: #ddd;
         }
 
-        body.dark .search-input {
+        body.dark .search-input,
+        body.dark .category-select {
             background: #111;
             color: #fff;
             border-color: #333;
         }
 
-        .search-input:focus {
+        .search-input:focus,
+        .category-select:focus {
             outline: none;
             border-color: #4CAF50;
         }
 
-        /* Stats */
-        .stats {
+        /* Stats & Sort */
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stats {
             font-size: 16px;
             opacity: 0.7;
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .sort-btn {
+            padding: 8px 16px;
+            border: 1px solid;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+
+        body.light .sort-btn {
+            border-color: #ddd;
+            color: #666;
+        }
+
+        body.dark .sort-btn {
+            border-color: #333;
+            color: #999;
+        }
+
+        .sort-btn.active {
+            background: #4CAF50;
+            color: #fff;
+            border-color: #4CAF50;
         }
 
         /* Word grid */
         .words-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 20px;
         }
 
@@ -142,6 +193,7 @@
             transition: all 0.3s ease;
             cursor: pointer;
             animation: fadeIn 0.5s ease-in;
+            position: relative;
         }
 
         @keyframes fadeIn {
@@ -164,6 +216,23 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
+        .word-featured {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+        }
+
+        .word-category {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-bottom: 10px;
+            background: #4CAF50;
+            color: #fff;
+        }
+
         .word-title {
             font-size: 32px;
             font-weight: bold;
@@ -174,15 +243,16 @@
             font-size: 16px;
             line-height: 1.6;
             opacity: 0.8;
+            margin-bottom: 15px;
         }
 
-        .word-date {
+        .word-meta {
+            display: flex;
+            justify-content: space-between;
             font-size: 12px;
-            margin-top: 15px;
             opacity: 0.5;
         }
 
-        /* Loading */
         .loading {
             text-align: center;
             padding: 60px;
@@ -190,14 +260,12 @@
             opacity: 0.5;
         }
 
-        /* Empty state */
         .empty {
             text-align: center;
             padding: 60px;
             opacity: 0.5;
         }
 
-        /* Theme toggle */
         .theme-toggle {
             width: 50px;
             height: 26px;
@@ -233,6 +301,12 @@
             .words-grid {
                 grid-template-columns: 1fr;
             }
+            .filters {
+                flex-direction: column;
+            }
+            .search-input {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -246,16 +320,27 @@
             </div>
         </div>
 
-        <div class="search-box">
+        <div class="filters">
             <input 
                 type="text" 
                 class="search-input" 
                 id="searchInput" 
-                placeholder="🔍 Search words..."
+                placeholder="🔍 Search words or meanings..."
             >
+            <select class="category-select" id="categoryFilter">
+                <option value="">All Categories</option>
+            </select>
         </div>
 
-        <div class="stats" id="stats">Loading...</div>
+        <div class="stats-bar">
+            <div class="stats" id="stats">Loading...</div>
+            <div class="sort-controls">
+                <button class="sort-btn active" data-sort="newest">Newest</button>
+                <button class="sort-btn" data-sort="oldest">Oldest</button>
+                <button class="sort-btn" data-sort="popular">Most Viewed</button>
+                <button class="sort-btn" data-sort="az">A-Z</button>
+            </div>
+        </div>
 
         <div id="content">
             <div class="loading">Loading words...</div>
@@ -268,6 +353,7 @@
 
         let allWords = [];
         let filteredWords = [];
+        let currentSort = 'newest';
 
         // Theme toggle
         const themeToggle = document.getElementById('themeToggle');
@@ -285,7 +371,7 @@
         // Load all words
         async function loadWords() {
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/words?select=*&order=created_at.desc`, {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/words?select=*`, {
                     headers: {
                         'apikey': SUPABASE_KEY,
                         'Authorization': `Bearer ${SUPABASE_KEY}`
@@ -296,6 +382,9 @@
 
                 allWords = await response.json();
                 filteredWords = allWords;
+                
+                populateCategories();
+                sortWords(currentSort);
                 displayWords();
 
             } catch (err) {
@@ -308,10 +397,38 @@
             }
         }
 
+        function populateCategories() {
+            const categories = [...new Set(allWords.map(w => w.category).filter(Boolean))];
+            const select = document.getElementById('categoryFilter');
+            
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                select.appendChild(option);
+            });
+        }
+
+        function sortWords(sortType) {
+            switch(sortType) {
+                case 'newest':
+                    filteredWords.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    break;
+                case 'oldest':
+                    filteredWords.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+                    break;
+                case 'popular':
+                    filteredWords.sort((a, b) => (b.views || 0) - (a.views || 0));
+                    break;
+                case 'az':
+                    filteredWords.sort((a, b) => a.word.localeCompare(b.word));
+                    break;
+            }
+        }
+
         function displayWords() {
             const content = document.getElementById('content');
             
-            // Update stats
             document.getElementById('stats').textContent = 
                 `${filteredWords.length} word${filteredWords.length !== 1 ? 's' : ''} found`;
 
@@ -319,9 +436,6 @@
                 content.innerHTML = `
                     <div class="empty">
                         <p>No words found</p>
-                        <p style="margin-top: 20px;">
-                            <a href="admin.html" class="btn">Add your first word</a>
-                        </p>
                     </div>
                 `;
                 return;
@@ -337,14 +451,19 @@
                 const date = new Date(word.created_at);
                 const formattedDate = date.toLocaleDateString('en-US', {
                     year: 'numeric',
-                    month: 'long',
+                    month: 'short',
                     day: 'numeric'
                 });
 
                 card.innerHTML = `
+                    ${word.featured ? '<div class="word-featured">⭐</div>' : ''}
+                    ${word.category ? `<div class="word-category">${word.category}</div>` : ''}
                     <div class="word-title">${word.word}</div>
                     <div class="word-meaning">${word.meaning}</div>
-                    <div class="word-date">Added: ${formattedDate}</div>
+                    <div class="word-meta">
+                        <span>📅 ${formattedDate}</span>
+                        <span>👁️ ${word.views || 0} views</span>
+                    </div>
                 `;
 
                 grid.appendChild(card);
@@ -354,24 +473,39 @@
             content.appendChild(grid);
         }
 
-        // Search functionality
-        const searchInput = document.getElementById('searchInput');
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
+        function filterWords() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            const categoryFilter = document.getElementById('categoryFilter').value;
             
-            if (query === '') {
-                filteredWords = allWords;
-            } else {
-                filteredWords = allWords.filter(word => 
-                    word.word.toLowerCase().includes(query) ||
-                    word.meaning.toLowerCase().includes(query)
-                );
-            }
+            filteredWords = allWords.filter(word => {
+                const matchesSearch = searchQuery === '' || 
+                    word.word.toLowerCase().includes(searchQuery) ||
+                    word.meaning.toLowerCase().includes(searchQuery);
+                
+                const matchesCategory = categoryFilter === '' || word.category === categoryFilter;
+                
+                return matchesSearch && matchesCategory;
+            });
             
+            sortWords(currentSort);
             displayWords();
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', filterWords);
+        document.getElementById('categoryFilter').addEventListener('change', filterWords);
+
+        // Sort buttons
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentSort = btn.dataset.sort;
+                sortWords(currentSort);
+                displayWords();
+            });
         });
 
-        // Load words on page load
         loadWords();
     </script>
 </body>

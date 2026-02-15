@@ -2,58 +2,19 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Add Words</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Word Management</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background: #f5f5f5;
             padding: 20px;
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
-        h1 { color: #333; }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        textarea {
-            min-height: 100px;
-            font-family: Arial, sans-serif;
-        }
-        button {
-            background: #4CAF50;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        button:hover { background: #45a049; }
-        #status {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            display: none;
-        }
-        #status.success {
-            background: #d4edda;
-            color: #155724;
-        }
-        #status.error {
-            background: #f8d7da;
-            color: #721c24;
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
         }
         .back-link {
             color: #4CAF50;
@@ -61,30 +22,204 @@
             margin-bottom: 20px;
             display: inline-block;
         }
+        .form-section {
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+        .checkbox-group label {
+            margin: 0;
+            font-weight: normal;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        #status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        #status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .help-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .stats {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            flex: 1;
+            min-width: 150px;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
     <a href="index.html" class="back-link">← Back to Site</a>
     
-    <h1>Add Word of the Day</h1>
+    <h1>📝 Word Management</h1>
 
-    <div class="form-group">
-        <label for="word">Word *</label>
-        <input type="text" id="word" placeholder="e.g., Serendipity" required>
+    <div class="stats" id="stats">
+        <div class="stat-item">
+            <div class="stat-number" id="totalWords">-</div>
+            <div class="stat-label">Total Words</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="totalViews">-</div>
+            <div class="stat-label">Total Views</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="featuredCount">-</div>
+            <div class="stat-label">Featured</div>
+        </div>
     </div>
 
-    <div class="form-group">
-        <label for="meaning">Meaning *</label>
-        <textarea id="meaning" placeholder="Enter meaning..." required></textarea>
+    <div class="form-section">
+        <h2>Add New Word</h2>
+
+        <div class="form-group">
+            <label for="word">Word *</label>
+            <input type="text" id="word" placeholder="e.g., Serendipity" required>
+        </div>
+
+        <div class="form-group">
+            <label for="meaning">Meaning *</label>
+            <textarea id="meaning" placeholder="Enter the meaning..." required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category">
+                <option value="">Select category (optional)</option>
+                <option value="General">General</option>
+                <option value="Business">Business</option>
+                <option value="Technology">Technology</option>
+                <option value="Science">Science</option>
+                <option value="Arts">Arts</option>
+                <option value="Philosophy">Philosophy</option>
+                <option value="Psychology">Psychology</option>
+                <option value="Literature">Literature</option>
+            </select>
+            <div class="help-text">Helps users find words by topic</div>
+        </div>
+
+        <div class="form-group">
+            <div class="checkbox-group">
+                <input type="checkbox" id="featured">
+                <label for="featured">⭐ Mark as Featured (Word of the Week)</label>
+            </div>
+            <div class="help-text">Featured words appear with a special badge</div>
+        </div>
+
+        <button onclick="saveWord()" id="saveBtn">💾 Save Word</button>
+
+        <div id="status"></div>
     </div>
-
-    <button onclick="saveWord()" id="saveBtn">Save Word</button>
-
-    <div id="status"></div>
 
     <script type="module">
         const SUPABASE_URL = "https://qzatavslhtkioivemwlk.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
+
+        // Load stats
+        async function loadStats() {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/words?select=*`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+
+                if (response.ok) {
+                    const words = await response.json();
+                    document.getElementById('totalWords').textContent = words.length;
+                    
+                    const totalViews = words.reduce((sum, w) => sum + (w.views || 0), 0);
+                    document.getElementById('totalViews').textContent = totalViews;
+                    
+                    const featuredCount = words.filter(w => w.featured).length;
+                    document.getElementById('featuredCount').textContent = featuredCount;
+                }
+            } catch (err) {
+                console.error('Error loading stats:', err);
+            }
+        }
 
         window.saveWord = async function() {
             const saveBtn = document.getElementById('saveBtn');
@@ -92,15 +227,26 @@
             
             const word = document.getElementById('word').value.trim();
             const meaning = document.getElementById('meaning').value.trim();
+            const category = document.getElementById('category').value;
+            const featured = document.getElementById('featured').checked;
 
             if (!word || !meaning) {
-                showStatus('Please fill in both fields', 'error');
+                showStatus('Please fill in word and meaning', 'error');
                 return;
             }
 
             try {
                 saveBtn.disabled = true;
-                saveBtn.textContent = 'Saving...';
+                saveBtn.textContent = '💾 Saving...';
+
+                const data = { 
+                    word, 
+                    meaning,
+                    views: 0
+                };
+                
+                if (category) data.category = category;
+                if (featured) data.featured = true;
 
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/words`, {
                     method: 'POST',
@@ -110,10 +256,7 @@
                         'Content-Type': 'application/json',
                         'Prefer': 'return=representation'
                     },
-                    body: JSON.stringify({
-                        word: word,
-                        meaning: meaning
-                    })
+                    body: JSON.stringify(data)
                 });
 
                 if (!response.ok) {
@@ -126,13 +269,18 @@
                 // Clear form
                 document.getElementById('word').value = '';
                 document.getElementById('meaning').value = '';
+                document.getElementById('category').value = '';
+                document.getElementById('featured').checked = false;
+
+                // Reload stats
+                loadStats();
 
             } catch (error) {
                 console.error('Error:', error);
                 showStatus('❌ Error: ' + error.message, 'error');
             } finally {
                 saveBtn.disabled = false;
-                saveBtn.textContent = 'Save Word';
+                saveBtn.textContent = '💾 Save Word';
             }
         }
 
@@ -143,6 +291,9 @@
             status.style.display = 'block';
             setTimeout(() => status.style.display = 'none', 5000);
         }
+
+        // Load initial stats
+        loadStats();
     </script>
 </body>
 </html>
