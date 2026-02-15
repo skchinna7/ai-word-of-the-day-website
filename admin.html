@@ -66,16 +66,26 @@
 <body>
     <a href="index.html" class="back-link">← Back to Site</a>
     
-    <h1>Add Word</h1>
+    <h1>Add Word of the Day</h1>
 
     <div class="form-group">
         <label for="word">Word *</label>
-        <input type="text" id="word" placeholder="e.g., Serendipity">
+        <input type="text" id="word" placeholder="e.g., Serendipity" required>
     </div>
 
     <div class="form-group">
-        <label for="definition">Definition *</label>
+        <label for="phonetic">Phonetic</label>
+        <input type="text" id="phonetic" placeholder="e.g., ser-ən-ˈdi-pə-tē">
+    </div>
+
+    <div class="form-group">
+        <label for="definition">Definition</label>
         <textarea id="definition" placeholder="Enter definition..."></textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="meaning">Meaning</label>
+        <textarea id="meaning" placeholder="Enter meaning..."></textarea>
     </div>
 
     <button onclick="saveWord()" id="saveBtn">Save Word</button>
@@ -91,10 +101,17 @@
             const status = document.getElementById('status');
             
             const word = document.getElementById('word').value.trim();
+            const phonetic = document.getElementById('phonetic').value.trim();
             const definition = document.getElementById('definition').value.trim();
+            const meaning = document.getElementById('meaning').value.trim();
 
-            if (!word || !definition) {
-                showStatus('Please fill in both fields', 'error');
+            if (!word) {
+                showStatus('Please enter a word', 'error');
+                return;
+            }
+
+            if (!definition && !meaning) {
+                showStatus('Please enter either definition or meaning', 'error');
                 return;
             }
 
@@ -102,7 +119,11 @@
                 saveBtn.disabled = true;
                 saveBtn.textContent = 'Saving...';
 
-                // Only send word and definition - nothing else!
+                const data = { word };
+                if (phonetic) data.phonetic = phonetic;
+                if (definition) data.definition = definition;
+                if (meaning) data.meaning = meaning;
+
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/words`, {
                     method: 'POST',
                     headers: {
@@ -111,10 +132,7 @@
                         'Content-Type': 'application/json',
                         'Prefer': 'return=representation'
                     },
-                    body: JSON.stringify({
-                        word: word,
-                        definition: definition
-                    })
+                    body: JSON.stringify(data)
                 });
 
                 if (!response.ok) {
@@ -122,10 +140,13 @@
                     throw new Error(error.message || 'Failed to save');
                 }
 
-                showStatus('✅ Word saved!', 'success');
+                showStatus('✅ Word saved successfully!', 'success');
                 
+                // Clear form
                 document.getElementById('word').value = '';
+                document.getElementById('phonetic').value = '';
                 document.getElementById('definition').value = '';
+                document.getElementById('meaning').value = '';
 
             } catch (error) {
                 console.error('Error:', error);
