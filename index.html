@@ -61,6 +61,31 @@
             padding: 20px;
             border-radius: 10px;
             margin: 20px 0;
+            color: #ff6666;
+        }
+
+        .error h2 {
+            margin-bottom: 10px;
+            color: #ff4444;
+        }
+
+        .error pre {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .debug {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #888;
         }
 
         footer {
@@ -89,13 +114,20 @@
 </head>
 <body>
     <div class="container">
-        <div id="loading" class="loading">Loading word of the day...</div>
+        <div id="loading" class="loading">
+            <div style="font-size: 3rem; margin-bottom: 20px;">⏳</div>
+            Loading word of the day...
+        </div>
+        
         <div id="error" class="error" style="display: none;"></div>
+        
         <div id="content" style="display: none;">
             <h1 id="word"></h1>
             <p id="phonetic"></p>
             <p id="definition"></p>
         </div>
+
+        <div id="debug" class="debug" style="display: none;"></div>
     </div>
 
     <footer>
@@ -104,11 +136,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = "https://vikzesimclynhzhavdrl.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpa3plc2ltY2x5bmh6aGF2ZHJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcyNDgsImV4cCI6MjA4NTM5MzI0OH0.k44Eibz2i7VD2rA-JGZu_v0s3t3ruKdxHr6qZx-U1MQ";
-
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
         // Show today's date
         document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {
             weekday: 'long',
@@ -117,64 +144,105 @@
             day: 'numeric'
         });
 
+        const SUPABASE_URL = "https://vikzesimclynhzhavdrl.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpa3plc2ltY2x5bmh6aGF2ZHJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcyNDgsImV4cCI6MjA4NTM5MzI0OH0.k44Eibz2i7VD2rA-JGZu_v0s3t3ruKdxHr6qZx-U1MQ";
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function showDebug(message) {
+            const debug = document.getElementById('debug');
+            debug.style.display = 'block';
+            debug.innerHTML += message + '<br>';
+            console.log(message);
+        }
+
         async function loadWord() {
             const loading = document.getElementById('loading');
             const error = document.getElementById('error');
             const content = document.getElementById('content');
             
             try {
-                console.log('✅ Connecting to Supabase...');
-                console.log('📅 Today:', new Date().toISOString().split('T')[0]);
+                showDebug('🔌 Step 1: Connecting to Supabase...');
+                showDebug('📍 URL: ' + SUPABASE_URL);
+                showDebug('🔑 Key: ' + SUPABASE_KEY.substring(0, 20) + '...');
                 
-                // Get today's date
                 const today = new Date().toISOString().split('T')[0];
+                showDebug('📅 Step 2: Today is: ' + today);
                 
-                // Try to get word for today
-                let { data, error: fetchError } = await supabase
+                showDebug('📡 Step 3: Fetching from database...');
+                
+                // Try to get ANY word from database
+                const { data, error: fetchError } = await supabase
                     .from('words')
                     .select('*')
-                    .eq('scheduled_date', today)
                     .limit(1);
 
-                console.log('Response:', data, fetchError);
+                showDebug('📦 Step 4: Response received');
+                showDebug('Data: ' + JSON.stringify(data, null, 2));
+                showDebug('Error: ' + JSON.stringify(fetchError, null, 2));
 
-                if (fetchError || !data || data.length === 0) {
-                    console.log('⚠️ No word for today, getting latest...');
-                    
-                    // If no word for today, get the latest word
-                    const { data: latestData, error: latestError } = await supabase
-                        .from('words')
-                        .select('*')
-                        .order('created_at', { ascending: false })
-                        .limit(1);
-
-                    if (latestError || !latestData || latestData.length === 0) {
-                        throw new Error('No words found in database. Please add words via admin panel.');
-                    }
-                    
-                    data = latestData;
+                if (fetchError) {
+                    throw new Error('Database error: ' + fetchError.message + '\n\nDetails: ' + JSON.stringify(fetchError, null, 2));
                 }
 
+                if (!data || data.length === 0) {
+                    throw new Error('No words in database!\n\nPlease:\n1. Go to Supabase Dashboard\n2. Run the SQL setup\n3. Add a word via admin panel');
+                }
+
+                showDebug('✅ Step 5: Word found!');
                 displayWord(data[0]);
+                
                 loading.style.display = 'none';
                 content.style.display = 'block';
                 
             } catch (err) {
                 console.error('❌ Error:', err);
+                showDebug('❌ ERROR: ' + err.message);
+                
                 loading.style.display = 'none';
                 error.style.display = 'block';
                 error.innerHTML = `
                     <h2>⚠️ Error Loading Word</h2>
-                    <p>${err.message}</p>
-                    <p style="margin-top: 10px; font-size: 0.9rem;">
-                        <a href="admin.html" style="color: #4CAF50;">Go to Admin Panel</a> to add words
-                    </p>
+                    <p><strong>Error:</strong> ${err.message}</p>
+                    
+                    <h3 style="margin-top: 20px;">🔧 Quick Fixes:</h3>
+                    <ol style="margin-left: 20px; line-height: 2;">
+                        <li><strong>Database not setup?</strong><br>
+                            Go to <a href="https://supabase.com/dashboard" style="color: #4CAF50;">Supabase Dashboard</a> → SQL Editor → Run setup SQL
+                        </li>
+                        <li><strong>No words added?</strong><br>
+                            Go to <a href="admin.html" style="color: #4CAF50;">Admin Panel</a> to add words
+                        </li>
+                        <li><strong>Still broken?</strong><br>
+                            Press F12 → Console tab → Copy errors and paste to me
+                        </li>
+                    </ol>
+
+                    <h3 style="margin-top: 20px;">📋 SQL Setup (Copy & Run in Supabase):</h3>
+                    <pre>CREATE TABLE IF NOT EXISTS public.words (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  word TEXT NOT NULL,
+  phonetic TEXT,
+  definition TEXT NOT NULL,
+  scheduled_date DATE DEFAULT CURRENT_DATE,
+  status TEXT DEFAULT 'approved',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.words ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow read" ON public.words FOR SELECT TO anon USING (true);
+CREATE POLICY "Allow insert" ON public.words FOR INSERT TO anon WITH CHECK (true);
+
+INSERT INTO public.words (word, phonetic, definition)
+VALUES ('self-care', 'self ker', 'the practice of taking action to preserve or improve one''s own health.');</pre>
                 `;
             }
         }
 
         function displayWord(wordData) {
-            console.log('📝 Displaying word:', wordData);
+            showDebug('🎨 Displaying: ' + JSON.stringify(wordData, null, 2));
+            
             document.getElementById('word').textContent = wordData.word || 'Word';
             document.getElementById('phonetic').textContent = 
                 wordData.phonetic || wordData.pronunciation ? 
@@ -184,7 +252,10 @@
         }
 
         // Load word when page loads
-        loadWord();
+        window.addEventListener('load', () => {
+            showDebug('🚀 Page loaded, starting...');
+            loadWord();
+        });
     </script>
 </body>
 </html>
