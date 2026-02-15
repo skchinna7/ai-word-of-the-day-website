@@ -198,7 +198,6 @@
             gap: 5px;
         }
 
-        /* Comments Section */
         .comments-section {
             margin-top: 60px;
             padding-top: 40px;
@@ -412,7 +411,6 @@
                 <button class="btn" id="randomBtn">🎲 Random</button>
                 <button class="btn" id="featuredBtn">⭐ Featured</button>
                 <a href="archive.html" class="btn">📚 Archive</a>
-                <!-- <a href="admin.html" class="btn">⚙️ Admin</a> -->
             </div>
         </div>
 
@@ -434,7 +432,6 @@
         let isFavorited = false;
         let speechSynth = window.speechSynthesis;
 
-        // Update date and time
         function updateDateTime() {
             const now = new Date();
             const options = { 
@@ -451,7 +448,6 @@
         updateDateTime();
         setInterval(updateDateTime, 60000);
 
-        // Theme toggle
         const themeToggle = document.getElementById('themeToggle');
         const savedTheme = localStorage.getItem('theme') || 'dark';
         document.body.className = savedTheme;
@@ -464,7 +460,6 @@
             localStorage.setItem('theme', isDark ? 'light' : 'dark');
         });
 
-        // Check auth status
         async function checkAuth() {
             const { data: { session } } = await supabase.auth.getSession();
             currentUser = session?.user || null;
@@ -483,11 +478,13 @@
                 userSection.innerHTML = `
                     <div class="user-info">
                         <span>👤 ${name}</span>
+                        <a href="favorites.html" class="btn" style="padding: 5px 15px;">❤️ Favorites</a>
+                        <a href="admin.html" class="btn" style="padding: 5px 15px;">⚙️ Admin</a>
                         <button class="btn" onclick="logout()" style="padding: 5px 15px;">Logout</button>
                     </div>
                 `;
             } else {
-                userSection.innerHTML = `<a href="login.html" class="btn">Login</a>`;
+                userSection.innerHTML = `<a href="login.html" class="btn">🔐 Login</a>`;
             }
         }
 
@@ -496,17 +493,18 @@
             window.location.reload();
         }
 
-        // Load word
-        async function loadWord(mode = 'latest') {
+        async function loadWord(mode = 'today') {
             try {
                 let url;
+                const today = new Date().toISOString().split('T')[0];
                 
                 if (mode === 'featured') {
                     url = `${SUPABASE_URL}/rest/v1/words?select=*&featured=eq.true&order=created_at.desc&limit=1`;
                 } else if (mode === 'random') {
                     url = `${SUPABASE_URL}/rest/v1/words?select=*`;
                 } else {
-                    url = `${SUPABASE_URL}/rest/v1/words?select=*&order=created_at.desc&limit=1`;
+                    // Load word scheduled for today
+                    url = `${SUPABASE_URL}/rest/v1/words?select=*&scheduled_for=eq.${today}&limit=1`;
                 }
                 
                 const response = await fetch(url, {
@@ -520,10 +518,21 @@
 
                 let data = await response.json();
 
+                // If no word for today, get latest word
+                if ((!data || data.length === 0) && mode === 'today') {
+                    const fallbackResponse = await fetch(`${SUPABASE_URL}/rest/v1/words?select=*&order=created_at.desc&limit=1`, {
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`
+                        }
+                    });
+                    data = await fallbackResponse.json();
+                }
+
                 if (!data || data.length === 0) {
                     document.getElementById('content').innerHTML = `
-                        <div class="word">No Words</div>
-                        <div class="meaning">Add words via admin panel</div>
+                        <div class="word">No Words Yet</div>
+                        <div class="meaning">Words will appear here when scheduled</div>
                     `;
                     return;
                 }
@@ -534,7 +543,6 @@
                     currentWord = data[0];
                 }
 
-                // Update view count
                 await fetch(`${SUPABASE_URL}/rest/v1/words?id=eq.${currentWord.id}`, {
                     method: 'PATCH',
                     headers: {
@@ -548,7 +556,6 @@
                     })
                 });
 
-                // Check if favorited
                 if (currentUser) {
                     const { data: fav } = await supabase
                         .from('favorites')
@@ -602,11 +609,10 @@
                     <div class="stat-item"><span>👁️</span><span>${word.views || 0} views</span></div>
                     <div class="stat-item"><span>❤️</span><span>${word.favorites_count || 0} favorites</span></div>
                     <div class="stat-item"><span>💬</span><span>${word.comments_count || 0} comments</span></div>
-                    <div class="stat-item"><span>📅</span><span>${new Date(word.created_at).toLocaleDateString()}</span></div>
+                    <div class="stat-item"><span>📅</span><span>${word.scheduled_for || new Date(word.created_at).toLocaleDateString()}</span></div>
                 </div>
             `;
 
-            // Comments section
             html += `
                 <div class="comments-section" id="commentsSection">
                     <div class="comments-header">
@@ -621,14 +627,13 @@
                         </div>
                     ` : `
                         <div class="login-prompt">
-                            <p><a href="login.html">Login</a> to post comments</p>
+                            <p><a href="login.html">Login</a> to post comments and save favorites</p>
                         </div>
                     `}
                     <div class="comments-list" id="commentsList"></div>
                 </div>
             `;
 
-            // Share section
             html += `
                 <div class="share-section">
                     <div class="share-title">Share this word:</div>
@@ -643,7 +648,6 @@
             document.getElementById('content').innerHTML = html;
         }
 
-        // Pronunciation
         window.pronounceWord = function() {
             if (!currentWord) return;
             const utterance = new SpeechSynthesisUtterance(currentWord.word);
@@ -651,7 +655,6 @@
             speechSynth.speak(utterance);
         }
 
-        // Toggle favorite
         window.toggleFavorite = async function() {
             if (!currentUser) {
                 window.location.href = 'login.html';
@@ -682,7 +685,6 @@
             }
         }
 
-        // Load comments
         async function loadComments() {
             try {
                 const { data: comments } = await supabase
@@ -716,7 +718,6 @@
             }
         }
 
-        // Post comment
         window.postComment = async function() {
             if (!currentUser) return;
 
@@ -743,7 +744,6 @@
             }
         }
 
-        // Share functions
         window.shareTwitter = function() {
             if (!currentWord) return;
             const text = `Word of the Day: ${currentWord.word}\n\n${currentWord.meaning}`;
@@ -763,11 +763,9 @@
             alert('Copied!');
         }
 
-        // Button handlers
         document.getElementById('randomBtn').addEventListener('click', () => loadWord('random'));
         document.getElementById('featuredBtn').addEventListener('click', () => loadWord('featured'));
 
-        // Initialize
         checkAuth();
         loadWord();
     </script>

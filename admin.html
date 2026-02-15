@@ -3,25 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Word Management</title>
+    <title>Admin - Schedule Words</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background: #f5f5f5;
             padding: 20px;
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
         }
+        
+        .login-required {
+            text-align: center;
+            padding: 100px 20px;
+        }
+        
+        .login-required h1 {
+            margin-bottom: 20px;
+        }
+        
+        .login-required a {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #4CAF50;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
         h1 {
             color: #333;
-            margin-bottom: 30px;
         }
+        
         .back-link {
             color: #4CAF50;
             text-decoration: none;
-            margin-bottom: 20px;
-            display: inline-block;
         }
+        
+        .stats {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-item {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
         .form-section {
             background: #fff;
             padding: 30px;
@@ -29,15 +84,18 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 30px;
         }
+        
         .form-group {
             margin-bottom: 20px;
         }
+        
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
             color: #555;
         }
+        
         input, textarea, select {
             width: 100%;
             padding: 12px;
@@ -47,27 +105,37 @@
             font-family: inherit;
             transition: border-color 0.3s;
         }
+        
         input:focus, textarea:focus, select:focus {
             outline: none;
             border-color: #4CAF50;
         }
+        
         textarea {
             min-height: 120px;
             resize: vertical;
         }
+        
+        input[type="date"] {
+            cursor: pointer;
+        }
+        
         .checkbox-group {
             display: flex;
             align-items: center;
             gap: 10px;
         }
+        
         .checkbox-group input[type="checkbox"] {
             width: auto;
             margin: 0;
         }
+        
         .checkbox-group label {
             margin: 0;
             font-weight: normal;
         }
+        
         button {
             background: #4CAF50;
             color: white;
@@ -78,222 +146,426 @@
             cursor: pointer;
             transition: background 0.3s;
         }
+        
         button:hover {
             background: #45a049;
         }
+        
         button:disabled {
             background: #ccc;
             cursor: not-allowed;
         }
+        
         #status {
             margin-top: 20px;
             padding: 15px;
             border-radius: 8px;
             display: none;
         }
+        
         #status.success {
             background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
         }
+        
         #status.error {
             background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+        
         .help-text {
             font-size: 14px;
             color: #666;
             margin-top: 5px;
         }
-        .stats {
+        
+        .scheduled-words {
             background: #fff;
-            padding: 20px;
+            padding: 30px;
             border-radius: 10px;
-            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .scheduled-words h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .word-list {
             display: flex;
-            gap: 30px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 15px;
         }
-        .stat-item {
+        
+        .word-item {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .word-item:hover {
+            border-color: #4CAF50;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .word-info {
             flex: 1;
-            min-width: 150px;
         }
-        .stat-number {
-            font-size: 32px;
+        
+        .word-title {
+            font-size: 20px;
             font-weight: bold;
-            color: #4CAF50;
+            color: #333;
+            margin-bottom: 5px;
         }
-        .stat-label {
-            color: #666;
+        
+        .word-date {
             font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .word-preview {
+            font-size: 14px;
+            color: #888;
+        }
+        
+        .word-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-delete {
+            background: #f44336;
+            color: #fff;
+        }
+        
+        .btn-delete:hover {
+            background: #da190b;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .date-highlight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .word-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .word-actions {
+                margin-top: 15px;
+                width: 100%;
+            }
+            
+            .btn-small {
+                flex: 1;
+            }
         }
     </style>
 </head>
 <body>
-    <a href="index.html" class="back-link">← Back to Site</a>
-    
-    <h1>📝 Word Management</h1>
-
-    <div class="stats" id="stats">
-        <div class="stat-item">
-            <div class="stat-number" id="totalWords">-</div>
-            <div class="stat-label">Total Words</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number" id="totalViews">-</div>
-            <div class="stat-label">Total Views</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number" id="featuredCount">-</div>
-            <div class="stat-label">Featured</div>
-        </div>
+    <div id="loginRequired" class="login-required" style="display: none;">
+        <h1>🔐 Login Required</h1>
+        <p>You must be logged in to access the admin panel</p>
+        <a href="login.html">Login Now</a>
     </div>
 
-    <div class="form-section">
-        <h2>Add New Word</h2>
-
-        <div class="form-group">
-            <label for="word">Word *</label>
-            <input type="text" id="word" placeholder="e.g., Serendipity" required>
+    <div id="adminContent" style="display: none;">
+        <div class="header">
+            <h1>📅 Schedule Words</h1>
+            <a href="index.html" class="back-link">← Back to Site</a>
         </div>
 
-        <div class="form-group">
-            <label for="meaning">Meaning *</label>
-            <textarea id="meaning" placeholder="Enter the meaning..." required></textarea>
-        </div>
-
-        <div class="form-group">
-            <label for="category">Category</label>
-            <select id="category">
-                <option value="">Select category (optional)</option>
-                <option value="General">General</option>
-                <option value="Business">Business</option>
-                <option value="Technology">Technology</option>
-                <option value="Science">Science</option>
-                <option value="Arts">Arts</option>
-                <option value="Philosophy">Philosophy</option>
-                <option value="Psychology">Psychology</option>
-                <option value="Literature">Literature</option>
-            </select>
-            <div class="help-text">Helps users find words by topic</div>
-        </div>
-
-        <div class="form-group">
-            <div class="checkbox-group">
-                <input type="checkbox" id="featured">
-                <label for="featured">⭐ Mark as Featured (Word of the Week)</label>
+        <div class="stats" id="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalWords">-</div>
+                <div class="stat-label">Total Words</div>
             </div>
-            <div class="help-text">Featured words appear with a special badge</div>
+            <div class="stat-item">
+                <div class="stat-number" id="scheduledToday">-</div>
+                <div class="stat-label">Today's Word</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="upcomingWords">-</div>
+                <div class="stat-label">Upcoming</div>
+            </div>
         </div>
 
-        <button onclick="saveWord()" id="saveBtn">💾 Save Word</button>
+        <div class="form-section">
+            <h2>📝 Add New Word</h2>
 
-        <div id="status"></div>
+            <div class="form-group">
+                <label for="word">Word *</label>
+                <input type="text" id="word" placeholder="e.g., Serendipity" required>
+            </div>
+
+            <div class="form-group">
+                <label for="meaning">Meaning *</label>
+                <textarea id="meaning" placeholder="Enter the meaning..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="scheduledFor">Schedule For Date *</label>
+                <input type="date" id="scheduledFor" required>
+                <div class="help-text">Choose which day this word should appear on the homepage</div>
+            </div>
+
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category">
+                    <option value="">Select category (optional)</option>
+                    <option value="General">General</option>
+                    <option value="Business">Business</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Science">Science</option>
+                    <option value="Arts">Arts</option>
+                    <option value="Philosophy">Philosophy</option>
+                    <option value="Psychology">Psychology</option>
+                    <option value="Literature">Literature</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="featured">
+                    <label for="featured">⭐ Mark as Featured (Word of the Week)</label>
+                </div>
+            </div>
+
+            <button onclick="saveWord()" id="saveBtn">💾 Schedule Word</button>
+
+            <div id="status"></div>
+        </div>
+
+        <div class="scheduled-words">
+            <h2>📆 Scheduled Words</h2>
+            <div class="word-list" id="wordList">
+                <div class="empty-state">Loading...</div>
+            </div>
+        </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module">
         const SUPABASE_URL = "https://qzatavslhtkioivemwlk.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
 
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentUser = null;
+
+        // Set today's date as default
+        document.getElementById('scheduledFor').valueAsDate = new Date();
+
+        // Check authentication
+        async function checkAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            currentUser = session?.user;
+
+            if (!currentUser) {
+                document.getElementById('loginRequired').style.display = 'block';
+                document.getElementById('adminContent').style.display = 'none';
+            } else {
+                document.getElementById('loginRequired').style.display = 'none';
+                document.getElementById('adminContent').style.display = 'block';
+                loadStats();
+                loadScheduledWords();
+            }
+        }
+
         // Load stats
         async function loadStats() {
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/words?select=*`, {
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`
-                    }
-                });
+                const { data: words } = await supabase
+                    .from('words')
+                    .select('*');
 
-                if (response.ok) {
-                    const words = await response.json();
+                if (words) {
                     document.getElementById('totalWords').textContent = words.length;
-                    
-                    const totalViews = words.reduce((sum, w) => sum + (w.views || 0), 0);
-                    document.getElementById('totalViews').textContent = totalViews;
-                    
-                    const featuredCount = words.filter(w => w.featured).length;
-                    document.getElementById('featuredCount').textContent = featuredCount;
+
+                    const today = new Date().toISOString().split('T')[0];
+                    const todayWords = words.filter(w => w.scheduled_for === today);
+                    document.getElementById('scheduledToday').textContent = todayWords.length > 0 ? '✅' : '❌';
+
+                    const upcoming = words.filter(w => w.scheduled_for > today);
+                    document.getElementById('upcomingWords').textContent = upcoming.length;
                 }
             } catch (err) {
                 console.error('Error loading stats:', err);
             }
         }
 
+        // Save word
         window.saveWord = async function() {
             const saveBtn = document.getElementById('saveBtn');
             const status = document.getElementById('status');
             
             const word = document.getElementById('word').value.trim();
             const meaning = document.getElementById('meaning').value.trim();
+            const scheduledFor = document.getElementById('scheduledFor').value;
             const category = document.getElementById('category').value;
             const featured = document.getElementById('featured').checked;
 
-            if (!word || !meaning) {
-                showStatus('Please fill in word and meaning', 'error');
+            if (!word || !meaning || !scheduledFor) {
+                showStatus('Please fill in word, meaning, and date', 'error');
                 return;
             }
 
             try {
                 saveBtn.disabled = true;
-                saveBtn.textContent = '💾 Saving...';
+                saveBtn.textContent = '💾 Scheduling...';
 
                 const data = { 
                     word, 
                     meaning,
+                    scheduled_for: scheduledFor,
                     views: 0
                 };
                 
                 if (category) data.category = category;
                 if (featured) data.featured = true;
 
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/words`, {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=representation'
-                    },
-                    body: JSON.stringify(data)
-                });
+                const { error } = await supabase
+                    .from('words')
+                    .insert(data);
 
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || 'Failed to save');
-                }
+                if (error) throw error;
 
-                showStatus('✅ Word saved successfully!', 'success');
+                showStatus(`✅ Word scheduled for ${new Date(scheduledFor).toLocaleDateString()}!`, 'success');
                 
                 // Clear form
                 document.getElementById('word').value = '';
                 document.getElementById('meaning').value = '';
+                document.getElementById('scheduledFor').valueAsDate = new Date();
                 document.getElementById('category').value = '';
                 document.getElementById('featured').checked = false;
 
-                // Reload stats
+                // Reload data
                 loadStats();
+                loadScheduledWords();
 
             } catch (error) {
                 console.error('Error:', error);
                 showStatus('❌ Error: ' + error.message, 'error');
             } finally {
                 saveBtn.disabled = false;
-                saveBtn.textContent = '💾 Save Word';
+                saveBtn.textContent = '💾 Schedule Word';
+            }
+        }
+
+        // Load scheduled words
+        async function loadScheduledWords() {
+            try {
+                const { data: words } = await supabase
+                    .from('words')
+                    .select('*')
+                    .order('scheduled_for', { ascending: false });
+
+                const wordList = document.getElementById('wordList');
+
+                if (!words || words.length === 0) {
+                    wordList.innerHTML = '<div class="empty-state">No words scheduled yet</div>';
+                    return;
+                }
+
+                const today = new Date().toISOString().split('T')[0];
+
+                wordList.innerHTML = words.map(word => {
+                    const isToday = word.scheduled_for === today;
+                    const isPast = word.scheduled_for < today;
+                    const scheduledDate = new Date(word.scheduled_for).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+
+                    return `
+                        <div class="word-item">
+                            <div class="word-info">
+                                <div class="word-title">
+                                    ${word.word}
+                                    ${word.featured ? ' ⭐' : ''}
+                                    ${word.category ? ` <span style="font-size: 14px; color: #4CAF50;">📁 ${word.category}</span>` : ''}
+                                </div>
+                                <div class="word-date">
+                                    ${isToday ? '<span class="date-highlight">TODAY</span>' : scheduledDate}
+                                    ${isPast ? ' (Past)' : ''}
+                                </div>
+                                <div class="word-preview">${word.meaning.substring(0, 100)}${word.meaning.length > 100 ? '...' : ''}</div>
+                            </div>
+                            <div class="word-actions">
+                                <button class="btn-small btn-delete" onclick="deleteWord('${word.id}', '${word.word}')">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading words:', error);
+            }
+        }
+
+        // Delete word
+        window.deleteWord = async function(id, word) {
+            if (!confirm(`Delete "${word}"?`)) return;
+
+            try {
+                const { error } = await supabase
+                    .from('words')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                loadStats();
+                loadScheduledWords();
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to delete word');
             }
         }
 
         function showStatus(message, type) {
             const status = document.getElementById('status');
             status.textContent = message;
-            status.className = type;
+            status.className = 'status ' + type;
             status.style.display = 'block';
             setTimeout(() => status.style.display = 'none', 5000);
         }
 
-        // Load initial stats
-        loadStats();
+        checkAuth();
     </script>
 </body>
 </html>
