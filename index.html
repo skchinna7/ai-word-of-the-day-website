@@ -1,261 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word of the Day</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            background-color: #000;
-            color: #fff;
-            font-family: 'Georgia', serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+          margin: 0;
+          background: #000;
+          color: #fff;
+          font-family: "Georgia", serif;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          padding: 20px;
         }
 
         .container {
-            max-width: 800px;
-            width: 100%;
+          max-width: 900px;
+          width: 100%;
         }
 
-        #word {
-            font-size: 5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            line-height: 1.2;
+        .word {
+          font-size: 80px;
+          margin-bottom: 20px;
+          font-weight: bold;
         }
 
-        #phonetic {
-            font-size: 2rem;
-            color: #999;
-            font-style: italic;
-            margin-bottom: 2rem;
+        .phonetic {
+          font-size: 28px;
+          margin-bottom: 30px;
+          opacity: 0.7;
+          font-style: italic;
         }
 
-        #definition {
-            font-size: 1.5rem;
-            line-height: 1.8;
-            color: #ddd;
-            font-family: 'Arial', sans-serif;
-            font-weight: 300;
-        }
-
-        .loading {
-            text-align: center;
-            font-size: 1.5rem;
-            color: #999;
-        }
-
-        .error {
-            background-color: #ff000020;
-            border: 1px solid #ff0000;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            color: #ff6666;
-        }
-
-        .error h2 {
-            margin-bottom: 10px;
-            color: #ff4444;
-        }
-
-        .error pre {
-            background: #1a1a1a;
-            padding: 10px;
-            border-radius: 5px;
-            overflow-x: auto;
-            margin-top: 10px;
-            font-size: 0.9rem;
-        }
-
-        .debug {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: #888;
-        }
-
-        footer {
-            position: fixed;
-            bottom: 20px;
-            text-align: center;
-            width: 100%;
-            color: #666;
-            font-size: 0.9rem;
+        .definition {
+          font-size: 24px;
+          line-height: 1.6;
+          max-width: 700px;
+          opacity: 0.9;
         }
 
         @media (max-width: 768px) {
-            #word {
-                font-size: 3rem;
-            }
-            
-            #phonetic {
-                font-size: 1.5rem;
-            }
-            
-            #definition {
-                font-size: 1.2rem;
-            }
+            .word { font-size: 50px; }
+            .phonetic { font-size: 20px; }
+            .definition { font-size: 18px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="loading" class="loading">
-            <div style="font-size: 3rem; margin-bottom: 20px;">⏳</div>
-            Loading word of the day...
+        <div id="content">
+            <div class="word" id="word">Loading...</div>
+            <div class="phonetic" id="phonetic"></div>
+            <div class="definition" id="definition"></div>
         </div>
-        
-        <div id="error" class="error" style="display: none;"></div>
-        
-        <div id="content" style="display: none;">
-            <h1 id="word"></h1>
-            <p id="phonetic"></p>
-            <p id="definition"></p>
-        </div>
-
-        <div id="debug" class="debug" style="display: none;"></div>
     </div>
 
-    <footer>
-        Word of the Day • <span id="date"></span>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        // Show today's date
-        document.getElementById('date').textContent = new Date().toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-
+    <script type="module">
+        // Using fetch directly - no external libraries needed!
         const SUPABASE_URL = "https://vikzesimclynhzhavdrl.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpa3plc2ltY2x5bmh6aGF2ZHJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcyNDgsImV4cCI6MjA4NTM5MzI0OH0.k44Eibz2i7VD2rA-JGZu_v0s3t3ruKdxHr6qZx-U1MQ";
 
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        function showDebug(message) {
-            const debug = document.getElementById('debug');
-            debug.style.display = 'block';
-            debug.innerHTML += message + '<br>';
-            console.log(message);
-        }
-
         async function loadWord() {
-            const loading = document.getElementById('loading');
-            const error = document.getElementById('error');
-            const content = document.getElementById('content');
-            
             try {
-                showDebug('🔌 Step 1: Connecting to Supabase...');
-                showDebug('📍 URL: ' + SUPABASE_URL);
-                showDebug('🔑 Key: ' + SUPABASE_KEY.substring(0, 20) + '...');
+                console.log('Fetching word...');
                 
-                const today = new Date().toISOString().split('T')[0];
-                showDebug('📅 Step 2: Today is: ' + today);
-                
-                showDebug('📡 Step 3: Fetching from database...');
-                
-                // Try to get ANY word from database
-                const { data, error: fetchError } = await supabase
-                    .from('words')
-                    .select('*')
-                    .limit(1);
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/words?select=*&limit=1`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
 
-                showDebug('📦 Step 4: Response received');
-                showDebug('Data: ' + JSON.stringify(data, null, 2));
-                showDebug('Error: ' + JSON.stringify(fetchError, null, 2));
-
-                if (fetchError) {
-                    throw new Error('Database error: ' + fetchError.message + '\n\nDetails: ' + JSON.stringify(fetchError, null, 2));
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+
+                const data = await response.json();
+                console.log('Data received:', data);
 
                 if (!data || data.length === 0) {
-                    throw new Error('No words in database!\n\nPlease:\n1. Go to Supabase Dashboard\n2. Run the SQL setup\n3. Add a word via admin panel');
+                    document.getElementById('word').textContent = 'No Words Yet';
+                    document.getElementById('definition').textContent = 'Add words via admin panel';
+                    return;
                 }
 
-                showDebug('✅ Step 5: Word found!');
-                displayWord(data[0]);
-                
-                loading.style.display = 'none';
-                content.style.display = 'block';
-                
+                const word = data[0];
+                document.getElementById('word').textContent = word.word || 'Word';
+                document.getElementById('phonetic').textContent = word.phonetic ? `/${word.phonetic}/` : '';
+                document.getElementById('definition').textContent = word.definition || word.meaning || 'No definition';
+
             } catch (err) {
-                console.error('❌ Error:', err);
-                showDebug('❌ ERROR: ' + err.message);
-                
-                loading.style.display = 'none';
-                error.style.display = 'block';
-                error.innerHTML = `
-                    <h2>⚠️ Error Loading Word</h2>
-                    <p><strong>Error:</strong> ${err.message}</p>
-                    
-                    <h3 style="margin-top: 20px;">🔧 Quick Fixes:</h3>
-                    <ol style="margin-left: 20px; line-height: 2;">
-                        <li><strong>Database not setup?</strong><br>
-                            Go to <a href="https://supabase.com/dashboard" style="color: #4CAF50;">Supabase Dashboard</a> → SQL Editor → Run setup SQL
-                        </li>
-                        <li><strong>No words added?</strong><br>
-                            Go to <a href="admin.html" style="color: #4CAF50;">Admin Panel</a> to add words
-                        </li>
-                        <li><strong>Still broken?</strong><br>
-                            Press F12 → Console tab → Copy errors and paste to me
-                        </li>
-                    </ol>
-
-                    <h3 style="margin-top: 20px;">📋 SQL Setup (Copy & Run in Supabase):</h3>
-                    <pre>CREATE TABLE IF NOT EXISTS public.words (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  word TEXT NOT NULL,
-  phonetic TEXT,
-  definition TEXT NOT NULL,
-  scheduled_date DATE DEFAULT CURRENT_DATE,
-  status TEXT DEFAULT 'approved',
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-ALTER TABLE public.words ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Allow read" ON public.words FOR SELECT TO anon USING (true);
-CREATE POLICY "Allow insert" ON public.words FOR INSERT TO anon WITH CHECK (true);
-
-INSERT INTO public.words (word, phonetic, definition)
-VALUES ('self-care', 'self ker', 'the practice of taking action to preserve or improve one''s own health.');</pre>
-                `;
+                console.error('Error:', err);
+                document.getElementById('word').textContent = 'Error';
+                document.getElementById('phonetic').textContent = '';
+                document.getElementById('definition').textContent = err.message + ' - Check console (F12)';
             }
         }
 
-        function displayWord(wordData) {
-            showDebug('🎨 Displaying: ' + JSON.stringify(wordData, null, 2));
-            
-            document.getElementById('word').textContent = wordData.word || 'Word';
-            document.getElementById('phonetic').textContent = 
-                wordData.phonetic || wordData.pronunciation ? 
-                `/${wordData.phonetic || wordData.pronunciation}/` : '';
-            document.getElementById('definition').textContent = 
-                wordData.definition || wordData.meaning || 'No definition available';
-        }
-
-        // Load word when page loads
-        window.addEventListener('load', () => {
-            showDebug('🚀 Page loaded, starting...');
-            loadWord();
-        });
+        loadWord();
     </script>
 </body>
 </html>
