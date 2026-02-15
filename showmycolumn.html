@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>DIAGNOSTIC - What Columns Do You Have?</title>
+    <style>
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            padding: 20px;
+            font-size: 16px;
+        }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        pre {
+            background: #111;
+            padding: 20px;
+            border: 1px solid #333;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 DIAGNOSTIC - Finding Your Columns</h1>
+    <div id="output"></div>
+
+    <script type="module">
+        const output = document.getElementById('output');
+        const SUPABASE_URL = "https://vikzesimclynhzhavdrl.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpa3plc2ltY2x5bmh6aGF2ZHJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcyNDgsImV4cCI6MjA4NTM5MzI0OH0.k44Eibz2i7VD2rA-JGZu_v0s3t3ruKdxHr6qZx-U1MQ";
+
+        async function diagnose() {
+            try {
+                output.innerHTML += '<p class="success">Fetching data from your table...</p>';
+                
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/words?select=*&limit=1`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                if (!data || data.length === 0) {
+                    output.innerHTML += '<p class="error">❌ No data in table</p>';
+                    return;
+                }
+
+                output.innerHTML += '<p class="success">✅ Got data from table!</p>';
+                output.innerHTML += '<h2>YOUR TABLE COLUMNS:</h2>';
+                
+                const columns = Object.keys(data[0]);
+                output.innerHTML += '<pre>' + JSON.stringify(columns, null, 2) + '</pre>';
+                
+                output.innerHTML += '<h2>SAMPLE DATA:</h2>';
+                output.innerHTML += '<pre>' + JSON.stringify(data[0], null, 2) + '</pre>';
+                
+                output.innerHTML += '<h2>📋 COPY THIS AND SEND TO ME:</h2>';
+                output.innerHTML += '<pre>COLUMNS: ' + columns.join(', ') + '</pre>';
+
+            } catch (err) {
+                output.innerHTML += '<p class="error">❌ ERROR: ' + err.message + '</p>';
+            }
+        }
+
+        diagnose();
+    </script>
+</body>
+</html>
