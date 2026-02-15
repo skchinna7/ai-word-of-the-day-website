@@ -74,18 +74,8 @@
     </div>
 
     <div class="form-group">
-        <label for="phonetic">Phonetic</label>
-        <input type="text" id="phonetic" placeholder="e.g., ser-ən-ˈdi-pə-tē">
-    </div>
-
-    <div class="form-group">
-        <label for="definition">Definition</label>
-        <textarea id="definition" placeholder="Enter definition..."></textarea>
-    </div>
-
-    <div class="form-group">
-        <label for="meaning">Meaning</label>
-        <textarea id="meaning" placeholder="Enter meaning..."></textarea>
+        <label for="meaning">Meaning *</label>
+        <textarea id="meaning" placeholder="Enter meaning..." required></textarea>
     </div>
 
     <button onclick="saveWord()" id="saveBtn">Save Word</button>
@@ -101,28 +91,16 @@
             const status = document.getElementById('status');
             
             const word = document.getElementById('word').value.trim();
-            const phonetic = document.getElementById('phonetic').value.trim();
-            const definition = document.getElementById('definition').value.trim();
             const meaning = document.getElementById('meaning').value.trim();
 
-            if (!word) {
-                showStatus('Please enter a word', 'error');
-                return;
-            }
-
-            if (!definition && !meaning) {
-                showStatus('Please enter either definition or meaning', 'error');
+            if (!word || !meaning) {
+                showStatus('Please fill in both fields', 'error');
                 return;
             }
 
             try {
                 saveBtn.disabled = true;
                 saveBtn.textContent = 'Saving...';
-
-                const data = { word };
-                if (phonetic) data.phonetic = phonetic;
-                if (definition) data.definition = definition;
-                if (meaning) data.meaning = meaning;
 
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/words`, {
                     method: 'POST',
@@ -132,7 +110,10 @@
                         'Content-Type': 'application/json',
                         'Prefer': 'return=representation'
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify({
+                        word: word,
+                        meaning: meaning
+                    })
                 });
 
                 if (!response.ok) {
@@ -144,8 +125,6 @@
                 
                 // Clear form
                 document.getElementById('word').value = '';
-                document.getElementById('phonetic').value = '';
-                document.getElementById('definition').value = '';
                 document.getElementById('meaning').value = '';
 
             } catch (error) {
