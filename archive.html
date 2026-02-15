@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Archive</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Georgia", serif;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        body.light {
+            background: #fff;
+            color: #000;
+        }
+
+        body.dark {
+            background: #000;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        h1 {
+            font-size: 48px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: 2px solid;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        body.light .btn {
+            border-color: #000;
+            color: #000;
+            background: transparent;
+        }
+
+        body.dark .btn {
+            border-color: #fff;
+            color: #fff;
+            background: transparent;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        body.light .btn:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        body.dark .btn:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        /* Search */
+        .search-box {
+            margin-bottom: 40px;
+        }
+
+        .search-input {
+            width: 100%;
+            max-width: 600px;
+            padding: 15px 20px;
+            font-size: 18px;
+            border: 2px solid;
+            border-radius: 30px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        body.light .search-input {
+            background: #fff;
+            color: #000;
+            border-color: #ddd;
+        }
+
+        body.dark .search-input {
+            background: #111;
+            color: #fff;
+            border-color: #333;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        /* Stats */
+        .stats {
+            margin-bottom: 30px;
+            font-size: 16px;
+            opacity: 0.7;
+        }
+
+        /* Word grid */
+        .words-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .word-card {
+            padding: 30px;
+            border: 1px solid;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body.light .word-card {
+            border-color: #ddd;
+            background: #fafafa;
+        }
+
+        body.dark .word-card {
+            border-color: #333;
+            background: #111;
+        }
+
+        .word-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .word-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .word-meaning {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+
+        .word-date {
+            font-size: 12px;
+            margin-top: 15px;
+            opacity: 0.5;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 24px;
+            opacity: 0.5;
+        }
+
+        /* Empty state */
+        .empty {
+            text-align: center;
+            padding: 60px;
+            opacity: 0.5;
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            width: 50px;
+            height: 26px;
+            background: #ccc;
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .theme-toggle.active {
+            background: #000;
+        }
+
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s;
+        }
+
+        .theme-toggle.active::before {
+            transform: translateX(24px);
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 32px; }
+            .words-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="dark">
+    <div class="container">
+        <div class="header">
+            <h1>📚 Word Archive</h1>
+            <div class="controls">
+                <div class="theme-toggle" id="themeToggle"></div>
+                <a href="index.html" class="btn">← Home</a>
+            </div>
+        </div>
+
+        <div class="search-box">
+            <input 
+                type="text" 
+                class="search-input" 
+                id="searchInput" 
+                placeholder="🔍 Search words..."
+            >
+        </div>
+
+        <div class="stats" id="stats">Loading...</div>
+
+        <div id="content">
+            <div class="loading">Loading words...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        const SUPABASE_URL = "https://qzatavslhtkioivemwlk.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
+
+        let allWords = [];
+        let filteredWords = [];
+
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.body.className = savedTheme;
+        if (savedTheme === 'dark') themeToggle.classList.add('active');
+
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.body.classList.contains('dark');
+            document.body.className = isDark ? 'light' : 'dark';
+            themeToggle.classList.toggle('active');
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+        });
+
+        // Load all words
+        async function loadWords() {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/words?select=*&order=created_at.desc`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                allWords = await response.json();
+                filteredWords = allWords;
+                displayWords();
+
+            } catch (err) {
+                console.error('Error:', err);
+                document.getElementById('content').innerHTML = `
+                    <div class="empty">
+                        <p>Error loading words: ${err.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayWords() {
+            const content = document.getElementById('content');
+            
+            // Update stats
+            document.getElementById('stats').textContent = 
+                `${filteredWords.length} word${filteredWords.length !== 1 ? 's' : ''} found`;
+
+            if (filteredWords.length === 0) {
+                content.innerHTML = `
+                    <div class="empty">
+                        <p>No words found</p>
+                        <p style="margin-top: 20px;">
+                            <a href="admin.html" class="btn">Add your first word</a>
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'words-grid';
+
+            filteredWords.forEach(word => {
+                const card = document.createElement('div');
+                card.className = 'word-card';
+                
+                const date = new Date(word.created_at);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                card.innerHTML = `
+                    <div class="word-title">${word.word}</div>
+                    <div class="word-meaning">${word.meaning}</div>
+                    <div class="word-date">Added: ${formattedDate}</div>
+                `;
+
+                grid.appendChild(card);
+            });
+
+            content.innerHTML = '';
+            content.appendChild(grid);
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            
+            if (query === '') {
+                filteredWords = allWords;
+            } else {
+                filteredWords = allWords.filter(word => 
+                    word.word.toLowerCase().includes(query) ||
+                    word.meaning.toLowerCase().includes(query)
+                );
+            }
+            
+            displayWords();
+        });
+
+        // Load words on page load
+        loadWords();
+    </script>
+</body>
+</html>

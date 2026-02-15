@@ -2,53 +2,315 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word of the Day</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-          margin: 0;
-          background: #000;
-          color: #fff;
-          font-family: "Georgia", serif;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 100vh;
-          padding: 20px;
+            margin: 0;
+            font-family: "Georgia", serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            transition: all 0.3s ease;
         }
+
+        /* Light mode (default) */
+        body.light {
+            background: #fff;
+            color: #000;
+        }
+
+        /* Dark mode */
+        body.dark {
+            background: #000;
+            color: #fff;
+        }
+
         .container {
-          max-width: 900px;
-          width: 100%;
+            max-width: 900px;
+            width: 100%;
+            animation: fadeIn 0.6s ease-in;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header with controls */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .date-time {
+            font-size: 16px;
+            opacity: 0.7;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: 2px solid;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        body.light .btn {
+            border-color: #000;
+            color: #000;
+            background: transparent;
+        }
+
+        body.dark .btn {
+            border-color: #fff;
+            color: #fff;
+            background: transparent;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        body.light .btn:hover {
+            background: #000;
+            color: #fff;
+        }
+
+        body.dark .btn:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        /* Word display */
         .word {
-          font-size: 80px;
-          margin-bottom: 40px;
-          font-weight: bold;
+            font-size: 80px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            animation: slideIn 0.8s ease-out;
         }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
         .meaning {
-          font-size: 24px;
-          line-height: 1.6;
-          max-width: 700px;
-          opacity: 0.9;
+            font-size: 24px;
+            line-height: 1.6;
+            max-width: 700px;
+            opacity: 0.9;
+            margin-bottom: 40px;
+            animation: slideIn 1s ease-out;
         }
+
+        /* Share buttons */
+        .share-section {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 1px solid;
+            animation: fadeIn 1.2s ease-in;
+        }
+
+        body.light .share-section {
+            border-color: #ddd;
+        }
+
+        body.dark .share-section {
+            border-color: #333;
+        }
+
+        .share-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .share-btn {
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            border: none;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .share-btn.twitter {
+            background: #1DA1F2;
+            color: #fff;
+        }
+
+        .share-btn.whatsapp {
+            background: #25D366;
+            color: #fff;
+        }
+
+        .share-btn.copy {
+            background: #6c757d;
+            color: #fff;
+        }
+
+        .share-btn:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            width: 50px;
+            height: 26px;
+            background: #ccc;
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .theme-toggle.active {
+            background: #000;
+        }
+
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s;
+        }
+
+        .theme-toggle.active::before {
+            transform: translateX(24px);
+        }
+
+        /* Loading state */
+        .loading {
+            text-align: center;
+            font-size: 24px;
+            opacity: 0.5;
+        }
+
+        /* Mobile responsive */
         @media (max-width: 768px) {
             .word { font-size: 50px; }
             .meaning { font-size: 18px; }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
-<body>
+<body class="dark">
     <div class="container">
-        <div class="word" id="word">Loading...</div>
-        <div class="meaning" id="meaning"></div>
+        <!-- Header with controls -->
+        <div class="header">
+            <div class="date-time" id="dateTime"></div>
+            <div class="controls">
+                <div class="theme-toggle" id="themeToggle" title="Toggle dark/light mode"></div>
+                <button class="btn" id="randomBtn">Random</button>
+                <a href="archive.html" class="btn">Archive</a>
+                <a href="admin.html" class="btn">Admin</a>
+            </div>
+        </div>
+
+        <!-- Word display -->
+        <div id="content">
+            <div class="word" id="word">Loading...</div>
+            <div class="meaning" id="meaning"></div>
+        </div>
+
+        <!-- Share section -->
+        <div class="share-section" id="shareSection" style="display: none;">
+            <div class="share-title">Share this word:</div>
+            <div class="share-buttons">
+                <button class="share-btn twitter" id="shareTwitter">
+                    🐦 Twitter
+                </button>
+                <button class="share-btn whatsapp" id="shareWhatsApp">
+                    💬 WhatsApp
+                </button>
+                <button class="share-btn copy" id="shareCopy">
+                    📋 Copy Link
+                </button>
+            </div>
+        </div>
     </div>
 
     <script type="module">
-        const SUPABASE_URL = "https://vikzesimclynhzhavdrl.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpa3plc2ltY2x5bmh6aGF2ZHJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcyNDgsImV4cCI6MjA4NTM5MzI0OH0.k44Eibz2i7VD2rA-JGZu_v0s3t3ruKdxHr6qZx-U1MQ";
+        const SUPABASE_URL = "https://qzatavslhtkioivemwlk.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
 
-        async function loadWord() {
+        let currentWord = null;
+
+        // Update date and time
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            document.getElementById('dateTime').textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        updateDateTime();
+        setInterval(updateDateTime, 60000); // Update every minute
+
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.body.className = savedTheme;
+        if (savedTheme === 'dark') themeToggle.classList.add('active');
+
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.body.classList.contains('dark');
+            document.body.className = isDark ? 'light' : 'dark';
+            themeToggle.classList.toggle('active');
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+        });
+
+        // Load word
+        async function loadWord(random = false) {
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/words?select=word,meaning&limit=1`, {
+                const orderBy = random ? 'id' : 'created_at';
+                const url = `${SUPABASE_URL}/rest/v1/words?select=*&order=${orderBy}.desc&limit=1`;
+                
+                const response = await fetch(url, {
                     headers: {
                         'apikey': SUPABASE_KEY,
                         'Authorization': `Bearer ${SUPABASE_KEY}`
@@ -61,13 +323,25 @@
 
                 if (!data || data.length === 0) {
                     document.getElementById('word').textContent = 'No Words';
-                    document.getElementById('meaning').textContent = 'Add words via admin.html';
+                    document.getElementById('meaning').textContent = 'Add words via admin panel';
                     return;
                 }
 
-                const word = data[0];
-                document.getElementById('word').textContent = word.word || 'Word';
-                document.getElementById('meaning').textContent = word.meaning || 'No meaning';
+                // If random, pick a random word from all words
+                if (random) {
+                    const allResponse = await fetch(`${SUPABASE_URL}/rest/v1/words?select=*`, {
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`
+                        }
+                    });
+                    const allWords = await allResponse.json();
+                    currentWord = allWords[Math.floor(Math.random() * allWords.length)];
+                } else {
+                    currentWord = data[0];
+                }
+
+                displayWord(currentWord);
 
             } catch (err) {
                 console.error('Error:', err);
@@ -76,6 +350,49 @@
             }
         }
 
+        function displayWord(word) {
+            document.getElementById('word').textContent = word.word || 'Word';
+            document.getElementById('meaning').textContent = word.meaning || 'No meaning';
+            document.getElementById('shareSection').style.display = 'block';
+        }
+
+        // Random button
+        document.getElementById('randomBtn').addEventListener('click', () => {
+            loadWord(true);
+        });
+
+        // Share buttons
+        document.getElementById('shareTwitter').addEventListener('click', () => {
+            if (!currentWord) return;
+            const text = `Word of the Day: ${currentWord.word}\n\n${currentWord.meaning}`;
+            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        });
+
+        document.getElementById('shareWhatsApp').addEventListener('click', () => {
+            if (!currentWord) return;
+            const text = `Word of the Day: *${currentWord.word}*\n\n${currentWord.meaning}`;
+            const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        });
+
+        document.getElementById('shareCopy').addEventListener('click', async () => {
+            if (!currentWord) return;
+            const text = `Word of the Day: ${currentWord.word}\n\n${currentWord.meaning}\n\nVisit: ${window.location.href}`;
+            
+            try {
+                await navigator.clipboard.writeText(text);
+                const btn = document.getElementById('shareCopy');
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    btn.textContent = '📋 Copy Link';
+                }, 2000);
+            } catch (err) {
+                alert('Failed to copy. Please try again.');
+            }
+        });
+
+        // Load initial word
         loadWord();
     </script>
 </body>
