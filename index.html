@@ -2,7 +2,6 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word of the Day</title>
     <style>
         body {
@@ -16,46 +15,31 @@
           min-height: 100vh;
           padding: 20px;
         }
-
         .container {
           max-width: 900px;
           width: 100%;
         }
-
         .word {
           font-size: 80px;
-          margin-bottom: 20px;
+          margin-bottom: 30px;
           font-weight: bold;
         }
-
-        .phonetic {
-          font-size: 28px;
-          margin-bottom: 30px;
-          opacity: 0.7;
-          font-style: italic;
-        }
-
         .definition {
           font-size: 24px;
           line-height: 1.6;
           max-width: 700px;
           opacity: 0.9;
         }
-
         @media (max-width: 768px) {
             .word { font-size: 50px; }
-            .phonetic { font-size: 20px; }
             .definition { font-size: 18px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="content">
-            <div class="word" id="word">Loading...</div>
-            <div class="phonetic" id="phonetic"></div>
-            <div class="definition" id="definition"></div>
-        </div>
+        <div class="word" id="word">Loading...</div>
+        <div class="definition" id="definition"></div>
     </div>
 
     <script type="module">
@@ -64,8 +48,6 @@
 
         async function loadWord() {
             try {
-                console.log('Fetching word...');
-                
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/words?select=*&limit=1`, {
                     headers: {
                         'apikey': SUPABASE_KEY,
@@ -73,29 +55,24 @@
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                 const data = await response.json();
-                console.log('Data received:', data);
+                console.log('Data:', data);
 
                 if (!data || data.length === 0) {
-                    document.getElementById('word').textContent = 'No Words Yet';
+                    document.getElementById('word').textContent = 'No Words';
                     document.getElementById('definition').textContent = 'Add words via admin.html';
                     return;
                 }
 
                 const word = data[0];
                 document.getElementById('word').textContent = word.word || 'Word';
-                document.getElementById('phonetic').textContent = word.phonetic ? `/${word.phonetic}/` : '';
-                // Try both 'meaning' and 'definition' columns
-                document.getElementById('definition').textContent = word.meaning || word.definition || 'No definition';
+                document.getElementById('definition').textContent = word.definition || 'No definition';
 
             } catch (err) {
                 console.error('Error:', err);
                 document.getElementById('word').textContent = 'Error';
-                document.getElementById('phonetic').textContent = '';
                 document.getElementById('definition').textContent = err.message;
             }
         }
