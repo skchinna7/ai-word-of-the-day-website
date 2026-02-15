@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Add Words</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        textarea {
+            min-height: 100px;
+            font-family: Arial, sans-serif;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        #status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        #status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .back-link {
+            color: #4CAF50;
+            text-decoration: none;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-link">← Back to Site</a>
+    
+    <h1>Add Word of the Day</h1>
+
+    <div class="form-group">
+        <label for="word">Word *</label>
+        <input type="text" id="word" placeholder="e.g., Serendipity" required>
+    </div>
+
+    <div class="form-group">
+        <label for="phonetic">Pronunciation</label>
+        <input type="text" id="phonetic" placeholder="e.g., ser-ən-ˈdi-pə-tē">
+    </div>
+
+    <div class="form-group">
+        <label for="definition">Definition *</label>
+        <textarea id="definition" placeholder="Enter the definition..." required></textarea>
+    </div>
+
+    <button onclick="saveWord()" id="saveBtn">Save Word</button>
+
+    <div id="status"></div>
+
+    <script type="module">
+        const SUPABASE_URL = "https://vikzesimclynhzhavdrl.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpa3plc2ltY2x5bmh6aGF2ZHJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcyNDgsImV4cCI6MjA4NTM5MzI0OH0.k44Eibz2i7VD2rA-JGZu_v0s3t3ruKdxHr6qZx-U1MQ";
+
+        window.saveWord = async function() {
+            const saveBtn = document.getElementById('saveBtn');
+            const status = document.getElementById('status');
+            
+            const word = document.getElementById('word').value.trim();
+            const phonetic = document.getElementById('phonetic').value.trim();
+            const definition = document.getElementById('definition').value.trim();
+
+            if (!word || !definition) {
+                showStatus('Please fill in Word and Definition', 'error');
+                return;
+            }
+
+            try {
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
+
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/words`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify({
+                        word: word,
+                        phonetic: phonetic,
+                        definition: definition
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to save');
+                }
+
+                showStatus('✅ Word saved successfully!', 'success');
+                
+                // Clear form
+                document.getElementById('word').value = '';
+                document.getElementById('phonetic').value = '';
+                document.getElementById('definition').value = '';
+
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('❌ Error: ' + error.message, 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Word';
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = type;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
