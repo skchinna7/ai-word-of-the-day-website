@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word of the Day</title>
+    <title>Word of the Day - Learn New Words Daily</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image" href="images/logo.jpg">
+    <!-- <link rel="icon" type="image" href="images/logo.jpg"> -->
+    
     <style>
         * {
             margin: 0;
@@ -12,11 +17,7 @@
         }
 
         body {
-            margin: 0;
             font-family: "Georgia", serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             min-height: 100vh;
             padding: 20px;
             transition: all 0.3s ease;
@@ -27,48 +28,110 @@
 
         .container {
             max-width: 900px;
-            width: 100%;
-            animation: fadeIn 0.6s ease-in;
+            margin: 0 auto;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        /* Header with Logo */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             flex-wrap: wrap;
             gap: 15px;
         }
 
-        .date-time {
-            font-size: 16px;
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .logo-image {
+            width: 50px;
+            height: 50px;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-container:hover .logo-image {
+            transform: scale(1.1);
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo-tagline {
+            font-size: 12px;
             opacity: 0.7;
+            display: block;
         }
 
         .controls {
             display: flex;
             gap: 10px;
+            align-items: center;
             flex-wrap: wrap;
-            align-items: center;
         }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
+        /* Search Bar */
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 30px auto;
         }
 
-        body.light .user-info { background: #f0f0f0; }
-        body.dark .user-info { background: #222; }
+        .search-bar {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: 2px solid;
+            border-radius: 30px;
+            font-size: 18px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
 
+        body.light .search-bar {
+            background: #fff;
+            color: #000;
+            border-color: #ddd;
+        }
+
+        body.dark .search-bar {
+            background: #111;
+            color: #fff;
+            border-color: #333;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            opacity: 0.5;
+        }
+
+        .search-results {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        body.light .search-results { background: #f9f9f9; }
+        body.dark .search-results { background: #111; }
+
+        /* Buttons */
         .btn {
             padding: 10px 20px;
             border: 2px solid;
@@ -88,271 +151,85 @@
         body.light .btn:hover { background: #000; color: #fff; }
         body.dark .btn:hover { background: #fff; color: #000; }
 
-        .featured-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            border-radius: 20px;
-            font-size: 12px;
-            margin-bottom: 15px;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .word-container {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+        /* Word Display */
+        .word-section {
+            text-align: center;
+            padding: 60px 0;
         }
 
         .word {
             font-size: 80px;
             font-weight: bold;
-            animation: slideIn 0.8s ease-out;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-30px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .word-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .action-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: 3px solid;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 24px;
-            background: transparent;
-        }
-
-        .pronunciation-btn {
-            border-color: #4CAF50;
-            color: #4CAF50;
-        }
-
-        .favorite-btn {
-            border-color: #ff4757;
-            color: #ff4757;
-        }
-
-        .favorite-btn.favorited {
-            background: #ff4757;
-            color: #fff;
-        }
-
-        .action-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .category-tag {
-            display: inline-block;
-            padding: 8px 20px;
-            border: 1px solid;
-            border-radius: 20px;
-            font-size: 14px;
             margin-bottom: 20px;
-            opacity: 0.7;
+            animation: fadeIn 1s;
         }
-
-        body.light .category-tag { border-color: #ddd; }
-        body.dark .category-tag { border-color: #333; }
 
         .meaning {
             font-size: 24px;
             line-height: 1.6;
             max-width: 700px;
+            margin: 0 auto 40px;
             opacity: 0.9;
-            margin-bottom: 20px;
-            animation: slideIn 1s ease-out;
         }
 
-        .word-stats {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 40px;
-            font-size: 14px;
-            opacity: 0.6;
-            flex-wrap: wrap;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .comments-section {
-            margin-top: 60px;
-            padding-top: 40px;
-            border-top: 1px solid;
-        }
-
-        body.light .comments-section { border-color: #ddd; }
-        body.dark .comments-section { border-color: #333; }
-
-        .comments-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .comments-title {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .comment-form {
-            margin-bottom: 30px;
-        }
-
-        .comment-form textarea {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid;
-            border-radius: 10px;
-            font-family: inherit;
-            font-size: 16px;
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        body.light .comment-form textarea {
-            background: #fff;
-            color: #000;
-            border-color: #ddd;
-        }
-
-        body.dark .comment-form textarea {
-            background: #111;
+        /* Newsletter Signup */
+        .newsletter {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #fff;
-            border-color: #333;
+            padding: 40px;
+            border-radius: 15px;
+            margin: 60px 0;
+            text-align: center;
         }
 
-        .comment-form textarea:focus {
-            outline: none;
-            border-color: #4CAF50;
-        }
-
-        .comment-form-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            justify-content: flex-end;
-        }
-
-        .comment-btn {
-            padding: 10px 24px;
-            border-radius: 20px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .comment-btn.primary {
-            background: #4CAF50;
-            color: #fff;
-        }
-
-        .comment-btn.primary:hover {
-            background: #45a049;
-        }
-
-        .comments-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .comment {
-            padding: 20px;
-            border-radius: 10px;
-            animation: fadeIn 0.5s;
-        }
-
-        body.light .comment { background: #f9f9f9; }
-        body.dark .comment { background: #111; }
-
-        .comment-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .newsletter h2 {
             margin-bottom: 10px;
         }
 
-        .comment-author {
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .comment-date {
-            font-size: 12px;
-            opacity: 0.6;
-        }
-
-        .comment-content {
-            font-size: 16px;
-            line-height: 1.6;
-        }
-
-        .share-section {
-            margin-top: 40px;
-            padding-top: 40px;
-            border-top: 1px solid;
-        }
-
-        body.light .share-section { border-color: #ddd; }
-        body.dark .share-section { border-color: #333; }
-
-        .share-title {
-            font-size: 18px;
-            margin-bottom: 15px;
-            opacity: 0.7;
-        }
-
-        .share-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .share-btn {
-            padding: 12px 24px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            border: none;
-            transition: all 0.3s ease;
-            font-family: inherit;
-        }
-
-        .share-btn.twitter { background: #1DA1F2; color: #fff; }
-        .share-btn.whatsapp { background: #25D366; color: #fff; }
-        .share-btn.copy { background: #6c757d; color: #fff; }
-
-        .share-btn:hover {
-            transform: scale(1.05);
+        .newsletter p {
+            margin-bottom: 20px;
             opacity: 0.9;
         }
 
+        .newsletter-form {
+            display: flex;
+            gap: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        .newsletter-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+        }
+
+        .newsletter-btn {
+            padding: 12px 30px;
+            background: #fff;
+            color: #667eea;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .newsletter-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Theme Toggle */
         .theme-toggle {
             width: 50px;
             height: 26px;
@@ -381,42 +258,107 @@
             transform: translateX(24px);
         }
 
-        .login-prompt {
-            text-align: center;
-            padding: 20px;
+        /* Stats */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
             opacity: 0.7;
         }
+
+        .stat-item {
+            font-size: 14px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 60px;
+            border-top: 1px solid;
+            opacity: 0.6;
+        }
+
+        body.light .footer { border-color: #ddd; }
+        body.dark .footer { border-color: #333; }
 
         @media (max-width: 768px) {
             .word { font-size: 50px; }
             .meaning { font-size: 18px; }
-            .header {
+            .newsletter-form {
                 flex-direction: column;
-                align-items: flex-start;
             }
-            .word-container {
-                flex-direction: column;
-                align-items: flex-start;
+            .logo-image {
+                width: 40px;
+                height: 40px;
+            }
+            .logo-text {
+                font-size: 18px;
             }
         }
     </style>
 </head>
 <body class="dark">
     <div class="container">
+        <!-- Header with Logo -->
         <div class="header">
-            <div class="date-time" id="dateTime"></div>
+            <a href="index.html" class="logo-container">
+                <img src="images/logo.jpg" alt="Word of the Day Logo" class="logo-image">
+                <div>
+                    <div class="logo-text">Word of the Day</div>
+                    <span class="logo-tagline">Expand your vocabulary daily</span>
+                </div>
+            </a>
             <div class="controls">
-                <div id="userSection"></div>
                 <a href="login.html" class="btn">🔐 Login</a>
-                <div class="theme-toggle" id="themeToggle" title="Toggle dark/light mode"></div>
-                <button class="btn" id="randomBtn">🎲 Random</button>
-                <button class="btn" id="featuredBtn">⭐ Featured</button>
+                <div class="theme-toggle" id="themeToggle"></div>
                 <a href="archive.html" class="btn">📚 Archive</a>
             </div>
         </div>
 
-        <div id="content">
-            <div class="word">Loading...</div>
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input 
+                type="text" 
+                class="search-bar" 
+                id="searchBar" 
+                placeholder="🔍 Search for a word..."
+            >
+            <span class="search-icon">🔍</span>
+        </div>
+
+        <div class="search-results" id="searchResults"></div>
+
+        <!-- Today's Word -->
+        <div class="word-section" id="wordSection">
+            <div class="word" id="word">Loading...</div>
+            <div class="meaning" id="meaning"></div>
+            <div class="stats" id="stats"></div>
+        </div>
+
+        <!-- Newsletter Signup -->
+        <div class="newsletter">
+            <h2>📧 Get Daily Words in Your Inbox</h2>
+            <p>Never miss a word! Subscribe to receive our word of the day via email.</p>
+            <form class="newsletter-form" id="subscribeForm">
+                <input 
+                    type="email" 
+                    class="newsletter-input" 
+                    id="subscribeEmail"
+                    placeholder="Enter your email" 
+                    required
+                >
+                <button type="submit" class="newsletter-btn">Subscribe</button>
+            </form>
+            <div id="subscribeStatus" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>&copy; 2026 Word of the Day. All rights reserved.</p>
+            <p>Expand your vocabulary, one word at a time.</p>
         </div>
     </div>
 
@@ -429,26 +371,8 @@
         const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentWord = null;
-        let currentUser = null;
-        let isFavorited = false;
-        let speechSynth = window.speechSynthesis;
 
-        function updateDateTime() {
-            const now = new Date();
-            const options = { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            };
-            document.getElementById('dateTime').textContent = now.toLocaleDateString('en-US', options);
-        }
-
-        updateDateTime();
-        setInterval(updateDateTime, 60000);
-
+        // Theme toggle
         const themeToggle = document.getElementById('themeToggle');
         const savedTheme = localStorage.getItem('theme') || 'dark';
         document.body.className = savedTheme;
@@ -461,314 +385,146 @@
             localStorage.setItem('theme', isDark ? 'light' : 'dark');
         });
 
-        async function checkAuth() {
-            const { data: { session } } = await supabase.auth.getSession();
-            currentUser = session?.user || null;
-            
-            const userSection = document.getElementById('userSection');
-            
-            if (currentUser) {
-                const { data: profile } = await supabase
-                    .from('user_profiles')
-                    .select('full_name')
-                    .eq('id', currentUser.id)
-                    .single();
-                
-                const name = profile?.full_name || currentUser.email.split('@')[0];
-                
-                userSection.innerHTML = `
-                    <div class="user-info">
-                        <span>👤 ${name}</span>
-                        <a href="favorites.html" class="btn" style="padding: 5px 15px;">❤️ Favorites</a>
-                        <a href="admin.html" class="btn" style="padding: 5px 15px;">⚙️ Admin</a>
-                        <button class="btn" onclick="logout()" style="padding: 5px 15px;">Logout</button>
-                    </div>
-                `;
-            } else {
-                userSection.innerHTML = `<a href="login.html" class="btn">🔐 Login</a>`;
-            }
-        }
-
-        window.logout = async function() {
-            await supabase.auth.signOut();
-            window.location.reload();
-        }
-
-        async function loadWord(mode = 'today') {
+        // Load today's word
+        async function loadTodayWord() {
             try {
-                let url;
                 const today = new Date().toISOString().split('T')[0];
                 
-                if (mode === 'featured') {
-                    url = `${SUPABASE_URL}/rest/v1/words?select=*&featured=eq.true&order=created_at.desc&limit=1`;
-                } else if (mode === 'random') {
-                    url = `${SUPABASE_URL}/rest/v1/words?select=*`;
-                } else {
-                    // Load word scheduled for today
-                    url = `${SUPABASE_URL}/rest/v1/words?select=*&scheduled_for=eq.${today}&limit=1`;
-                }
-                
-                const response = await fetch(url, {
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`
-                    }
-                });
+                let { data: words } = await supabase
+                    .from('words')
+                    .select('*')
+                    .eq('scheduled_for', today)
+                    .eq('is_published', true)
+                    .limit(1);
 
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-                let data = await response.json();
-
-                // If no word for today, get latest word
-                if ((!data || data.length === 0) && mode === 'today') {
-                    const fallbackResponse = await fetch(`${SUPABASE_URL}/rest/v1/words?select=*&order=created_at.desc&limit=1`, {
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': `Bearer ${SUPABASE_KEY}`
-                        }
-                    });
-                    data = await fallbackResponse.json();
+                if (!words || words.length === 0) {
+                    const { data: latest } = await supabase
+                        .from('words')
+                        .select('*')
+                        .eq('is_published', true)
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+                    
+                    words = latest;
                 }
 
-                if (!data || data.length === 0) {
-                    document.getElementById('content').innerHTML = `
-                        <div class="word">No Words Yet</div>
-                        <div class="meaning">Words will appear here when scheduled</div>
-                    `;
+                if (!words || words.length === 0) {
+                    document.getElementById('word').textContent = 'No Words Yet';
+                    document.getElementById('meaning').textContent = 'Check back soon!';
                     return;
                 }
 
-                if (mode === 'random') {
-                    currentWord = data[Math.floor(Math.random() * data.length)];
-                } else {
-                    currentWord = data[0];
-                }
-
-                await fetch(`${SUPABASE_URL}/rest/v1/words?id=eq.${currentWord.id}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify({
-                        views: (currentWord.views || 0) + 1
-                    })
-                });
-
-                if (currentUser) {
-                    const { data: fav } = await supabase
-                        .from('favorites')
-                        .select('id')
-                        .eq('user_id', currentUser.id)
-                        .eq('word_id', currentWord.id)
-                        .single();
-                    
-                    isFavorited = !!fav;
-                }
-
+                currentWord = words[0];
                 displayWord(currentWord);
-                await loadComments();
 
-            } catch (err) {
-                console.error('Error:', err);
-                document.getElementById('content').innerHTML = `
-                    <div class="word">Error</div>
-                    <div class="meaning">${err.message}</div>
-                `;
+                await supabase
+                    .from('words')
+                    .update({ views: (currentWord.views || 0) + 1 })
+                    .eq('id', currentWord.id);
+
+            } catch (error) {
+                console.error('Error:', error);
             }
         }
 
         function displayWord(word) {
-            let html = '';
-
-            if (word.featured) {
-                html += '<div class="featured-badge">⭐ Word of the Week</div>';
-            }
-
-            if (word.category) {
-                html += `<div class="category-tag">📁 ${word.category}</div>`;
-            }
-
-            html += `
-                <div class="word-container">
-                    <div class="word">${word.word}</div>
-                    <div class="word-actions">
-                        <button class="action-btn pronunciation-btn" onclick="pronounceWord()" title="Hear pronunciation">
-                            🔊
-                        </button>
-                        ${currentUser ? `
-                            <button class="action-btn favorite-btn ${isFavorited ? 'favorited' : ''}" onclick="toggleFavorite()" title="Add to favorites">
-                                ${isFavorited ? '❤️' : '🤍'}
-                            </button>
-                        ` : ''}
-                    </div>
-                </div>
-                <div class="meaning">${word.meaning}</div>
-                <div class="word-stats">
-                    <div class="stat-item"><span>👁️</span><span>${word.views || 0} views</span></div>
-                    <div class="stat-item"><span>❤️</span><span>${word.favorites_count || 0} favorites</span></div>
-                    <div class="stat-item"><span>💬</span><span>${word.comments_count || 0} comments</span></div>
-                    <div class="stat-item"><span>📅</span><span>${word.scheduled_for || new Date(word.created_at).toLocaleDateString()}</span></div>
-                </div>
+            document.getElementById('word').textContent = word.word;
+            document.getElementById('meaning').textContent = word.meaning;
+            
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-item">👁️ ${word.views || 0} views</div>
+                <div class="stat-item">❤️ ${word.favorites_count || 0} favorites</div>
+                <div class="stat-item">💬 ${word.comments_count || 0} comments</div>
             `;
-
-            html += `
-                <div class="comments-section" id="commentsSection">
-                    <div class="comments-header">
-                        <div class="comments-title">💬 Comments (${word.comments_count || 0})</div>
-                    </div>
-                    ${currentUser ? `
-                        <div class="comment-form">
-                            <textarea id="commentInput" placeholder="Share your thoughts..."></textarea>
-                            <div class="comment-form-actions">
-                                <button class="comment-btn primary" onclick="postComment()">Post Comment</button>
-                            </div>
-                        </div>
-                    ` : `
-                        <div class="login-prompt">
-                            <p><a href="login.html">Login</a> to post comments and save favorites</p>
-                        </div>
-                    `}
-                    <div class="comments-list" id="commentsList"></div>
-                </div>
-            `;
-
-            html += `
-                <div class="share-section">
-                    <div class="share-title">Share this word:</div>
-                    <div class="share-buttons">
-                        <button class="share-btn twitter" onclick="shareTwitter()">🐦 Twitter</button>
-                        <button class="share-btn whatsapp" onclick="shareWhatsApp()">💬 WhatsApp</button>
-                        <button class="share-btn copy" onclick="shareCopy()">📋 Copy</button>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('content').innerHTML = html;
         }
 
-        window.pronounceWord = function() {
-            if (!currentWord) return;
-            const utterance = new SpeechSynthesisUtterance(currentWord.word);
-            utterance.rate = 0.8;
-            speechSynth.speak(utterance);
-        }
-
-        window.toggleFavorite = async function() {
-            if (!currentUser) {
-                window.location.href = 'login.html';
+        // Search functionality
+        let searchTimeout;
+        document.getElementById('searchBar').addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                document.getElementById('searchResults').style.display = 'none';
                 return;
             }
 
+            searchTimeout = setTimeout(() => searchWords(query), 300);
+        });
+
+        async function searchWords(query) {
             try {
-                if (isFavorited) {
-                    await supabase
-                        .from('favorites')
-                        .delete()
-                        .eq('user_id', currentUser.id)
-                        .eq('word_id', currentWord.id);
-                } else {
-                    await supabase
-                        .from('favorites')
-                        .insert({
-                            user_id: currentUser.id,
-                            word_id: currentWord.id
-                        });
-                }
+                const { data: words } = await supabase
+                    .from('words')
+                    .select('*')
+                    .eq('is_published', true)
+                    .or(`word.ilike.%${query}%,meaning.ilike.%${query}%`);
 
-                isFavorited = !isFavorited;
-                loadWord();
-
-            } catch (error) {
-                console.error('Favorite error:', error);
-            }
-        }
-
-        async function loadComments() {
-            try {
-                const { data: comments } = await supabase
-                    .from('comments')
-                    .select(`
-                        *,
-                        user_profiles (full_name)
-                    `)
-                    .eq('word_id', currentWord.id)
-                    .order('created_at', { ascending: false });
-
-                const commentsList = document.getElementById('commentsList');
+                const resultsDiv = document.getElementById('searchResults');
                 
-                if (!comments || comments.length === 0) {
-                    commentsList.innerHTML = '<div class="login-prompt">No comments yet. Be the first!</div>';
+                await supabase
+                    .from('search_history')
+                    .insert({
+                        search_query: query,
+                        results_count: words?.length || 0
+                    });
+
+                if (!words || words.length === 0) {
+                    resultsDiv.innerHTML = '<p>No words found</p>';
+                    resultsDiv.style.display = 'block';
                     return;
                 }
 
-                commentsList.innerHTML = comments.map(comment => `
-                    <div class="comment">
-                        <div class="comment-header">
-                            <div class="comment-author">${comment.user_profiles?.full_name || 'Anonymous'}</div>
-                            <div class="comment-date">${new Date(comment.created_at).toLocaleDateString()}</div>
+                resultsDiv.innerHTML = `
+                    <h3>Found ${words.length} word${words.length > 1 ? 's' : ''}</h3>
+                    ${words.map(w => `
+                        <div style="padding: 15px; border-bottom: 1px solid #eee;">
+                            <strong style="font-size: 20px;">${w.word}</strong>
+                            <p>${w.meaning}</p>
                         </div>
-                        <div class="comment-content">${comment.content}</div>
-                    </div>
-                `).join('');
+                    `).join('')}
+                `;
+                resultsDiv.style.display = 'block';
 
             } catch (error) {
-                console.error('Error loading comments:', error);
+                console.error('Search error:', error);
             }
         }
 
-        window.postComment = async function() {
-            if (!currentUser) return;
-
-            const input = document.getElementById('commentInput');
-            const content = input.value.trim();
-
-            if (!content) return;
+        // Subscribe to newsletter
+        document.getElementById('subscribeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('subscribeEmail').value.trim();
+            const statusDiv = document.getElementById('subscribeStatus');
 
             try {
-                await supabase
-                    .from('comments')
-                    .insert({
-                        word_id: currentWord.id,
-                        user_id: currentUser.id,
-                        content
-                    });
+                const { error } = await supabase
+                    .from('subscribers')
+                    .insert({ email });
 
-                input.value = '';
-                loadComments();
-                loadWord();
+                if (error) {
+                    if (error.code === '23505') {
+                        statusDiv.textContent = 'You\'re already subscribed!';
+                        statusDiv.style.color = '#ffeb3b';
+                    } else {
+                        throw error;
+                    }
+                } else {
+                    statusDiv.textContent = '✅ Subscribed! Check your email.';
+                    statusDiv.style.color = '#fff';
+                    document.getElementById('subscribeEmail').value = '';
+                }
 
             } catch (error) {
-                console.error('Comment error:', error);
+                console.error('Subscribe error:', error);
+                statusDiv.textContent = '❌ Error subscribing';
+                statusDiv.style.color = '#f44336';
             }
-        }
+        });
 
-        window.shareTwitter = function() {
-            if (!currentWord) return;
-            const text = `Word of the Day: ${currentWord.word}\n\n${currentWord.meaning}`;
-            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
-        }
-
-        window.shareWhatsApp = function() {
-            if (!currentWord) return;
-            const text = `Word of the Day: *${currentWord.word}*\n\n${currentWord.meaning}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        }
-
-        window.shareCopy = async function() {
-            if (!currentWord) return;
-            const text = `Word of the Day: ${currentWord.word}\n\n${currentWord.meaning}\n\nVisit: ${window.location.href}`;
-            await navigator.clipboard.writeText(text);
-            alert('Copied!');
-        }
-
-        document.getElementById('randomBtn').addEventListener('click', () => loadWord('random'));
-        document.getElementById('featuredBtn').addEventListener('click', () => loadWord('featured'));
-
-        checkAuth();
-        loadWord();
+        loadTodayWord();
     </script>
 </body>
 </html>

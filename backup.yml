@@ -1,0 +1,58 @@
+name: Supabase Database Backup
+
+on:
+  schedule:
+    # Daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Backup Supabase Database
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          # Create backup directory
+          mkdir -p backups
+          
+          # Generate backup filename
+          BACKUP_FILE="backups/database-backup-$(date +%Y%m%d-%H%M%S).sql"
+          
+          # Dump database
+          pg_dump "$SUPABASE_DB_URL" > "$BACKUP_FILE"
+          
+          # Compress backup
+          gzip "$BACKUP_FILE"
+          
+          echo "✅ Backup created: ${BACKUP_FILE}.gz"
+          ls -lh backups/
+
+      - name: Upload backup to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-backup-${{ github.run_number }}
+          path: backups/*.gz
+          retention-days: 30
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Database Backup Failed',
+              body: 'The scheduled database backup failed. Check the workflow logs.',
+              labels: ['backup', 'urgent']
+            })

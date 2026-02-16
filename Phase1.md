@@ -1,145 +1,283 @@
-# 🎉 PHASE 1 FEATURES - COMPLETE!
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { User, AuthContextType } from '../types';
+import { createClient } from '@supabase/supabase-js';
+import { validateEnvironment } from './envConfig';
 
-## ✅ What's Been Added:
+// Validate environment on load
+const envValidation = validateEnvironment();
 
-### 1. **Time/Date Display** ⏰
-- Live date and time in header
-- Updates every minute
-- Format: "Sunday, February 15, 2026, 10:30 AM"
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-### 2. **Dark/Light Mode Toggle** 🌓
-- Toggle button in header
-- Smooth transitions
-- Remembers your preference (localStorage)
-- Default: Dark mode
+export const isSupabaseConfigured =
+  typeof supabaseUrl === 'string' &&
+  typeof supabaseAnonKey === 'string' &&
+  supabaseUrl.length > 0 &&
+  supabaseAnonKey.length > 0 &&
+  envValidation.isValid;
 
-### 3. **Share Buttons** 📤
-- **Twitter** - Share word to Twitter
-- **WhatsApp** - Share via WhatsApp
-- **Copy Link** - Copy word to clipboard
-- All with beautiful animations
+// Create Supabase client only if properly configured
+export const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+      },
+    })
+  : null;
 
-### 4. **Random Word Button** 🎲
-- Click "Random" to see any word from database
-- Great for discovering old words
-- Smooth animations when switching
+// Log configuration status
+if (isSupabaseConfigured) {
+  console.log('✅ Supabase configured - checking session');
+} else {
+  console.log('❌ Supabase not configured - using mock mode');
+}
 
-### 5. **Archive Page** 📚
-- See ALL words in grid layout
-- Beautiful cards with hover effects
-- Shows when each word was added
-- Click-through from home page
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-### 6. **Search Functionality** 🔍
-- Search by word name OR meaning
-- Real-time filtering
-- Shows count of results
-- Works on archive page
+// Mock admin user for development when Supabase is not configured
+const mockAdminUser: User = {
+  id: 'mock-admin-id',
+  email: 'admin@wotd.in',
+  created_at: new Date().toISOString(),
+};
 
-### 7. **Animations & Transitions** ✨
-- Fade-in on page load
-- Slide-in for word
-- Hover effects on buttons
-- Smooth theme switching
-- Card animations
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
----
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) {
+      // Use mock user when Supabase is not configured
+      console.log('⚠️ Supabase not configured - authentication disabled');
+      setLoading(false);
+      return;
+    }
 
-## 📥 FILES TO DOWNLOAD:
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          console.log('✅ User authenticated:', session.user.email);
+          setUser({
+            id: session.user.id,
+            email: session.user.email!,
+            created_at: session.user.created_at,
+          });
+        } else {
+          console.log('ℹ️ User logged out');
+          setUser(null);
+        }
+      }
+    );
 
-1. **index_phase1.html** → Rename to `index.html`
-2. **archive.html** → Keep as is
+    // Check initial session
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email!,
+            created_at: session.user.created_at,
+          });
+        }
+      } catch (error) {
+        console.error('❌ Error checking session:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
----
+    checkSession();
 
-## 🎨 FEATURES BREAKDOWN:
+    return () => subscription.unsubscribe();
+  }, []);
 
-### index.html Has:
-✅ Live date/time
-✅ Dark/light toggle
-✅ Random word button
-✅ Share to Twitter
-✅ Share to WhatsApp
-✅ Copy to clipboard
-✅ Link to archive
-✅ Link to admin
-✅ Smooth animations
-✅ Mobile responsive
+  const login = async (email: string, password: string) => {
+    if (!isSupabaseConfigured || !supabase) {
+      console.log('⚠️ Mock login - Supabase not configured');
+      // Auto-login as admin for demo purposes
+      if (email === 'admin@wotd.in' || email === 'admin@wordofday.com') {
+        setUser(mockAdminUser);
+        return;
+      }
+      throw new Error('Supabase is not configured. Please set up environment variables.');
+    }
 
-### archive.html Has:
-✅ All words in grid
-✅ Real-time search
-✅ Word count display
-✅ Dark/light toggle
-✅ Beautiful card design
-✅ Hover effects
-✅ Back to home link
+    console.log('🔐 Attempting login for:', email);
 
----
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-## 🚀 HOW TO USE:
+      if (error) {
+        console.error('❌ Login error:', error.message);
+        throw new Error(error.message);
+      }
 
-1. **Download both files**
-2. **Replace your old index.html** with index_phase1.html
-3. **Add archive.html** to same folder
-4. **Open index.html** in browser
-5. **Enjoy all new features!** 🎊
+      if (data.user) {
+        console.log('✅ Login successful:', data.user.email);
+      }
+    } catch (error: any) {
+      console.error('❌ Login failed:', error);
+      throw error;
+    }
+  };
 
----
+  const signup = async (email: string, password: string) => {
+    if (!isSupabaseConfigured || !supabase) {
+      throw new Error('Supabase is not configured. Please set up environment variables.');
+    }
 
-## 🎯 WHAT WORKS:
+    console.log('📝 Attempting signup for:', email);
 
-- ✅ Dark mode (default)
-- ✅ Click toggle → Light mode
-- ✅ Click "Random" → See random word
-- ✅ Click "Archive" → See all words
-- ✅ Type in search → Filter words
-- ✅ Click share buttons → Share word
-- ✅ Everything animated smoothly
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
----
+      if (error) {
+        console.error('❌ Signup error:', error.message);
+        throw new Error(error.message);
+      }
 
-## 📱 MOBILE FRIENDLY:
+      if (data.user) {
+        console.log('✅ Signup successful:', data.user.email);
+        
+        // Create user profile
+        const { error: profileError } = await supabase.from('user_profiles').insert({
+          id: data.user.id,
+          notifications_enabled: true,
+          email_notifications: true,
+          daily_word_email: true,
+          weekly_digest: false,
+          achievement_alerts: true,
+          system_updates: true,
+          profile_visibility: 'public',
+          show_learning_stats: true,
+          allow_data_collection: true,
+        });
 
-All features work perfectly on:
-- ✅ iPhone
-- ✅ Android
-- ✅ iPad
-- ✅ Desktop
-- ✅ Any screen size
+        if (profileError) {
+          console.error('❌ Profile creation error:', profileError);
+        } else {
+          console.log('✅ User profile created');
+        }
 
----
+        setUser({
+          id: data.user.id,
+          email: data.user.email!,
+          created_at: data.user.created_at,
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ Signup failed:', error);
+      throw error;
+    }
+  };
 
-## 🎨 DESIGN:
+  const logout = async () => {
+    if (!isSupabaseConfigured || !supabase) {
+      console.log('⚠️ Mock logout');
+      setUser(null);
+      return;
+    }
 
-**Minimalist & Clean:**
-- Black & white color scheme
-- Smooth transitions
-- Modern rounded buttons
-- Beautiful typography
-- Professional look
+    console.log('👋 Logging out');
+    await supabase.auth.signOut();
+    setUser(null);
+  };
 
----
+  // Admin check - allow admin@wotd.in and admin@wordofday.com
+  const isAdmin = user?.email === 'admin@wotd.in' || user?.email === 'admin@wordofday.com';
 
-## ⚡ NEXT STEPS (PHASE 2):
+  console.log('🔍 Current user:', user?.email, '| Is admin:', isAdmin);
 
-When you're ready, we can add:
-- Categories/tags
-- Word of the week
-- Pronunciation audio
-- Advanced features
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
----
+  return (
+    <AuthContext.Provider value={{ user, login, signup, logout, isAdmin }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
-## 🎉 YOU NOW HAVE:
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
-✅ Professional word of the day site
-✅ Share functionality
-✅ Archive with search
-✅ Dark/light mode
-✅ Random words
-✅ Beautiful animations
-✅ Mobile responsive
-✅ All in ~30 minutes!
+// Environment Configuration Validator
+// This file helps debug environment variable issues
 
-**Enjoy your upgraded site!** 🚀
+export const getEnvConfig = () => {
+  const config = {
+    supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+    supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+    openaiApiKey: import.meta.env.VITE_OPENAI_API_KEY,
+  };
+
+  // Log configuration status (without exposing sensitive data)
+  console.log('🔧 Environment Configuration Check:');
+  console.log('  Supabase URL:', config.supabaseUrl ? '✅ Set' : '❌ Missing');
+  console.log('  Supabase Key:', config.supabaseAnonKey ? '✅ Set' : '❌ Missing');
+  console.log('  OpenAI Key:', config.openaiApiKey ? '✅ Set' : '❌ Missing');
+
+  // Validate Supabase URL format
+  if (config.supabaseUrl && !config.supabaseUrl.startsWith('https://')) {
+    console.error('❌ Invalid Supabase URL format. Should start with https://');
+  }
+
+  // Validate Supabase Key format
+  if (config.supabaseAnonKey && !config.supabaseAnonKey.startsWith('eyJ')) {
+    console.error('❌ Invalid Supabase Key format. Should start with eyJ');
+  }
+
+  return config;
+};
+
+export const validateEnvironment = (): {
+  isValid: boolean;
+  errors: string[];
+} => {
+  const errors: string[] = [];
+  const config = getEnvConfig();
+
+  if (!config.supabaseUrl) {
+    errors.push('VITE_SUPABASE_URL is not set');
+  } else if (!config.supabaseUrl.startsWith('https://')) {
+    errors.push('VITE_SUPABASE_URL must start with https://');
+  }
+
+  if (!config.supabaseAnonKey) {
+    errors.push('VITE_SUPABASE_ANON_KEY is not set');
+  } else if (!config.supabaseAnonKey.startsWith('eyJ')) {
+    errors.push('VITE_SUPABASE_ANON_KEY appears to be invalid (should start with eyJ)');
+  }
+
+  if (errors.length > 0) {
+    console.error('❌ Environment validation failed:', errors);
+  } else {
+    console.log('✅ Environment validation passed');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+};
+
