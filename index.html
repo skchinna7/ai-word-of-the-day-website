@@ -1,158 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word of the Day</title>
-    <link rel="icon" type="image/x-icon" href="images/logo.jpg">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: Georgia, serif;
-            background: #fff;
-            color: #000;
-            padding: 40px 20px;
-            min-height: 100vh;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 60px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        
-        h1 {
-            font-size: 28px;
-        }
-        
-        .nav {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .btn {
-            padding: 10px 20px;
-            background: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        
-        .btn:hover {
-            background: #45a049;
-        }
-        
-        .word-display {
-            text-align: center;
-            padding: 60px 20px;
-        }
-        
-        .word {
-            font-size: 72px;
-            font-weight: bold;
-            margin-bottom: 30px;
-            color: #333;
-        }
-        
-        .meaning {
-            font-size: 22px;
-            line-height: 1.8;
-            color: #555;
-        }
-        
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-        
-        @media (max-width: 768px) {
-            .word { font-size: 48px; }
-            .meaning { font-size: 18px; }
-        }
+        body { font-family: Georgia, serif; padding: 40px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { margin-bottom: 40px; }
+        .word { font-size: 72px; font-weight: bold; margin: 40px 0 20px; }
+        .meaning { font-size: 22px; color: #555; }
+        .btn { padding: 10px 20px; background: #4CAF50; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>📚 Word of the Day</h1>
-            <div class="nav">
-                <a href="login.html" class="btn">Login</a>
-                <a href="admin.html" class="btn">Admin</a>
-            </div>
-        </div>
+        <h1>📚 Word of the Day</h1>
+        <a href="login.html" class="btn">Login</a>
+        <a href="admin.html" class="btn">Admin</a>
         
-        <div class="word-display">
-            <div class="word" id="word">Loading...</div>
-            <div class="meaning" id="meaning"></div>
-        </div>
-        
-        <div id="error" class="error" style="display:none;"></div>
+        <div class="word" id="word">Loading...</div>
+        <div class="meaning" id="meaning"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = "https://qzatavslhtkioivemwlk.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
+        const URL = "https://qzatavslhtkioivemwlk.supabase.co";
+        const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
         
-        const { createClient } = window.supabase;
-        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        const client = window.supabase.createClient(URL, KEY);
         
-        // window.supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-        // const supabase = window.supabase;
-        
-        async function loadWord() {
-            try {
-                console.log('Connecting to Supabase...');
-                
-                // Just get the latest word - nothing fancy
-                const { data, error } = await supabase
-                    .from('words')
-                    .select('word, meaning')
-                    .order('created_at', { ascending: false })
-                    .limit(1);
-
-                console.log('Response:', { data, error });
-
+        client.from('words')
+            .select('word, meaning')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .then(({ data, error }) => {
                 if (error) {
-                    throw new Error(error.message);
-                }
-
-                if (!data || data.length === 0) {
-                    document.getElementById('word').textContent = 'No Words Yet';
-                    document.getElementById('meaning').textContent = 'Please add words using the admin panel';
+                    document.getElementById('word').textContent = 'Error: ' + error.message;
                     return;
                 }
-
-                document.getElementById('word').textContent = data[0].word;
-                document.getElementById('meaning').textContent = data[0].meaning;
-
-            } catch (err) {
-                console.error('Error:', err);
-                document.getElementById('word').textContent = 'Error';
-                document.getElementById('meaning').textContent = '';
-                
-                const errorDiv = document.getElementById('error');
-                errorDiv.textContent = 'Error: ' + err.message + ' - Check console (F12) for details';
-                errorDiv.style.display = 'block';
-            }
-        }
-
-        loadWord();
+                if (data && data.length > 0) {
+                    document.getElementById('word').textContent = data[0].word;
+                    document.getElementById('meaning').textContent = data[0].meaning;
+                } else {
+                    document.getElementById('word').textContent = 'No words yet';
+                    document.getElementById('meaning').textContent = 'Add words via admin';
+                }
+            });
     </script>
 </body>
 </html>
