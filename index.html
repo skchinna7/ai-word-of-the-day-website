@@ -109,11 +109,11 @@
         const SUPABASE_URL = "https://qzatavslhtkioivemwlk.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
         
-        //const { createClient } = window.supabase;
-        //const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        window.supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-        const supabase = window.supabase;
+        // window.supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        // const supabase = window.supabase;
         
         async function loadWord() {
             try {
