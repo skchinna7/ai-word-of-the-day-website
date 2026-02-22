@@ -3,20 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Admin Panel</title>
+    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: Arial, sans-serif;
             background: #f5f5f5;
             padding: 20px;
         }
-
         .login-required {
             text-align: center;
             padding: 100px 20px;
@@ -25,619 +20,160 @@
             max-width: 500px;
             margin: 100px auto;
         }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
+        .container { max-width: 1200px; margin: 0 auto; }
         .header {
             background: #fff;
-            padding: 20px 30px;
+            padding: 20px;
             border-radius: 10px;
             margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
-        h1 {
-            color: #333;
-        }
-
-        .back-link {
-            color: #4CAF50;
-            text-decoration: none;
-            font-size: 16px;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .stat-value {
-            font-size: 36px;
-            font-weight: bold;
-            color: #4CAF50;
-            margin: 10px 0;
-        }
-
-        .stat-label {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .stat-icon {
-            font-size: 24px;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .tab {
-            padding: 12px 24px;
-            background: #fff;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-
-        .tab.active {
-            background: #4CAF50;
-            color: #fff;
-        }
-
-        /* Content Sections */
-        .tab-content {
-            display: none;
+        h1 { color: #333; }
+        .back-link { color: #4CAF50; text-decoration: none; }
+        .form-section {
             background: #fff;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
         }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        /* Tables */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        th {
-            background: #f9f9f9;
-            font-weight: bold;
-            color: #333;
-        }
-
-        tr:hover {
-            background: #f5f5f5;
-        }
-
-        /* Forms */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
-        }
-
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
         input, textarea, select {
             width: 100%;
             padding: 12px;
             border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
-            font-family: inherit;
         }
-
-        textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-
+        textarea { min-height: 120px; }
         button {
             background: #4CAF50;
             color: white;
-            padding: 12px 24px;
+            padding: 14px 32px;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
             cursor: pointer;
-            transition: background 0.3s;
         }
-
-        button:hover {
-            background: #45a049;
-        }
-
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        .btn-danger {
-            background: #f44336;
-        }
-
-        .btn-danger:hover {
-            background: #da190b;
-        }
-
-        /* Status Messages */
+        button:hover { background: #45a049; }
         .status {
+            margin-top: 20px;
             padding: 15px;
             border-radius: 8px;
-            margin-top: 15px;
             display: none;
         }
-
-        .status.success {
-            background: #d4edda;
-            color: #155724;
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
-
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
         }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-
-        .search-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .badge {
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .badge.active {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .badge.inactive {
-            background: #f8d7da;
-            color: #721c24;
-        }
+        th { background: #f9f9f9; }
+        .btn-delete { background: #f44336; padding: 8px 16px; border-radius: 6px; border: none; color: white; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div id="loginRequired" class="login-required" style="display: none;">
+    <div id="loginRequired" class="login-required" style="display:none;">
         <h1>🔐 Access Denied</h1>
         <p>You must be an admin to access this page</p>
-        <a href="login.html">Login</a> | <a href="index.html">Go Home</a>
+        <a href="login.html">Login</a> | <a href="index.html">Home</a>
     </div>
-
-    <div id="adminContent" style="display: none;">
+    
+    <div id="adminContent" style="display:none;">
         <div class="container">
             <div class="header">
-                <h1>🎛️ Admin Dashboard</h1>
-                <a href="index.html" class="back-link">← Back to Site</a>
+                <h1>🎛️ Admin Panel</h1>
+                <a href="index.html" class="back-link">← Home</a>
             </div>
-
-            <!-- Stats Overview -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">📚</div>
-                    <div class="stat-value" id="totalWords">0</div>
-                    <div class="stat-label">Total Words</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">👁️</div>
-                    <div class="stat-value" id="totalViews">0</div>
-                    <div class="stat-label">Total Views</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📧</div>
-                    <div class="stat-value" id="totalSubscribers">0</div>
-                    <div class="stat-label">Subscribers</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">🔍</div>
-                    <div class="stat-value" id="totalSearches">0</div>
-                    <div class="stat-label">Total Searches</div>
-                </div>
-            </div>
-
-            <!-- Tabs -->
-            <div class="tabs">
-                <button class="tab active" onclick="switchTab('schedule')">📅 Schedule Words</button>
-                <button class="tab" onclick="switchTab('subscribers')">📧 Subscribers</button>
-                <button class="tab" onclick="switchTab('searches')">🔍 Search Analytics</button>
-                <button class="tab" onclick="switchTab('emails')">✉️ Email Logs</button>
-                <button class="tab" onclick="switchTab('words')">📊 Word Stats</button>
-            </div>
-
-            <!-- Tab: Schedule Words -->
-            <div id="schedule" class="tab-content active">
+            
+            <div class="form-section">
                 <h2>Schedule New Word</h2>
                 <form id="wordForm">
                     <div class="form-group">
-                        <label for="word">Word *</label>
+                        <label>Word *</label>
                         <input type="text" id="word" required>
                     </div>
                     <div class="form-group">
-                        <label for="meaning">Meaning *</label>
+                        <label>Meaning *</label>
                         <textarea id="meaning" required></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="scheduledFor">Schedule For *</label>
+                        <label>Schedule For *</label>
                         <input type="date" id="scheduledFor" required>
                     </div>
                     <div class="form-group">
-                        <label for="category">Category</label>
+                        <label>Category (optional)</label>
                         <select id="category">
-                            <option value="">Select...</option>
+                            <option value="">None</option>
                             <option value="General">General</option>
                             <option value="Business">Business</option>
                             <option value="Technology">Technology</option>
                             <option value="Science">Science</option>
-                            <option value="Arts">Arts</option>
-                            <option value="Philosophy">Philosophy</option>
-                            <option value="Psychology">Psychology</option>
-                            <option value="Literature">Literature</option>
                         </select>
                     </div>
                     <button type="submit">💾 Schedule Word</button>
-                    <div class="status" id="wordStatus"></div>
+                    <div class="status" id="status"></div>
                 </form>
-
-                <h2 style="margin-top: 40px;">Scheduled Words</h2>
-                <div id="scheduledWords"></div>
             </div>
-
-            <!-- Tab: Subscribers -->
-            <div id="subscribers" class="tab-content">
-                <h2>Email Subscribers</h2>
-                <div id="subscribersList"></div>
-            </div>
-
-            <!-- Tab: Search Analytics -->
-            <div id="searches" class="tab-content">
-                <h2>Search History & Analytics</h2>
-                <div id="searchAnalytics"></div>
-            </div>
-
-            <!-- Tab: Email Logs -->
-            <div id="emails" class="tab-content">
-                <h2>Email Logs</h2>
-                <div id="emailLogs"></div>
-            </div>
-
-            <!-- Tab: Word Stats -->
-            <div id="words" class="tab-content">
-                <h2>Word Statistics</h2>
-                <div id="wordStats"></div>
+            
+            <div class="form-section">
+                <h2>Scheduled Words</h2>
+                <div id="wordsList"></div>
             </div>
         </div>
     </div>
-
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module">
+    <script>
         const SUPABASE_URL = "https://qzatavslhtkioivemwlk.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
-
+        
         const { createClient } = window.supabase;
         const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-
+        
         let currentUser = null;
-        let isAdmin = false;
-
-        // Set today as default date
+        
         document.getElementById('scheduledFor').valueAsDate = new Date();
-
-        // Check if user is admin
-        async function checkAdminAccess() {
+        
+        async function checkAdmin() {
             const { data: { session } } = await supabase.auth.getSession();
             currentUser = session?.user;
-
+            
             if (!currentUser) {
-                showLoginRequired();
+                document.getElementById('loginRequired').style.display = 'block';
                 return;
             }
-
-            // Check admin role
+            
             const { data: adminRole } = await supabase
                 .from('admin_roles')
                 .select('role')
                 .eq('user_id', currentUser.id)
                 .single();
-
-            isAdmin = adminRole?.role === 'admin';
-
-            if (!isAdmin) {
-                showLoginRequired();
+            
+            if (!adminRole || adminRole.role !== 'admin') {
+                document.getElementById('loginRequired').style.display = 'block';
                 return;
             }
-
-            // User is admin, show dashboard
-            document.getElementById('loginRequired').style.display = 'none';
-            document.getElementById('adminContent').style.display = 'block';
             
-            loadDashboard();
+            document.getElementById('adminContent').style.display = 'block';
+            loadWords();
         }
-
-        function showLoginRequired() {
-            document.getElementById('loginRequired').style.display = 'block';
-            document.getElementById('adminContent').style.display = 'none';
-        }
-
-        // Load all dashboard data
-        async function loadDashboard() {
-            await Promise.all([
-                loadStats(),
-                loadScheduledWords(),
-                loadSubscribers(),
-                loadSearchAnalytics(),
-                loadEmailLogs(),
-                loadWordStats()
-            ]);
-        }
-
-        // Load stats
-        async function loadStats() {
-            try {
-                // Total words
-                const { data: words } = await supabase
-                    .from('words')
-                    .select('views');
-                
-                document.getElementById('totalWords').textContent = words?.length || 0;
-                
-                const totalViews = words?.reduce((sum, w) => sum + (w.views || 0), 0) || 0;
-                document.getElementById('totalViews').textContent = totalViews;
-
-                // Total subscribers
-                const { count: subCount } = await supabase
-                    .from('subscribers')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('is_active', true);
-                
-                document.getElementById('totalSubscribers').textContent = subCount || 0;
-
-                // Total searches
-                const { count: searchCount } = await supabase
-                    .from('search_history')
-                    .select('*', { count: 'exact', head: true });
-                
-                document.getElementById('totalSearches').textContent = searchCount || 0;
-
-            } catch (error) {
-                console.error('Error loading stats:', error);
-            }
-        }
-
-        // Load scheduled words
-        async function loadScheduledWords() {
-            try {
-                const { data: words } = await supabase
-                    .from('words')
-                    .select('*')
-                    .order('scheduled_for', { ascending: false });
-
-                const container = document.getElementById('scheduledWords');
-
-                if (!words || words.length === 0) {
-                    container.innerHTML = '<div class="empty-state">No words scheduled</div>';
-                    return;
-                }
-
-                const today = new Date().toISOString().split('T')[0];
-
-                container.innerHTML = '<table><thead><tr><th>Date</th><th>Word</th><th>Views</th><th>Favorites</th><th>Comments</th><th>Actions</th></tr></thead><tbody>' +
-                    words.map(w => `
-                        <tr>
-                            <td>${w.scheduled_for || 'Not scheduled'} ${w.scheduled_for === today ? '(TODAY)' : ''}</td>
-                            <td><strong>${w.word}</strong></td>
-                            <td>👁️ ${w.views || 0}</td>
-                            <td>❤️ ${w.favorites_count || 0}</td>
-                            <td>💬 ${w.comments_count || 0}</td>
-                            <td><button class="btn-danger" onclick="deleteWord('${w.id}')">Delete</button></td>
-                        </tr>
-                    `).join('') +
-                    '</tbody></table>';
-
-            } catch (error) {
-                console.error('Error loading words:', error);
-            }
-        }
-
-        // Load subscribers
-        async function loadSubscribers() {
-            try {
-                const { data: subs } = await supabase
-                    .from('subscribers')
-                    .select('*')
-                    .order('subscribed_at', { ascending: false });
-
-                const container = document.getElementById('subscribersList');
-
-                if (!subs || subs.length === 0) {
-                    container.innerHTML = '<div class="empty-state">No subscribers yet</div>';
-                    return;
-                }
-
-                container.innerHTML = '<table><thead><tr><th>Email</th><th>Name</th><th>Subscribed</th><th>Status</th></tr></thead><tbody>' +
-                    subs.map(s => `
-                        <tr>
-                            <td>${s.email}</td>
-                            <td>${s.name || '-'}</td>
-                            <td>${new Date(s.subscribed_at).toLocaleDateString()}</td>
-                            <td><span class="badge ${s.is_active ? 'active' : 'inactive'}">${s.is_active ? 'Active' : 'Inactive'}</span></td>
-                        </tr>
-                    `).join('') +
-                    '</tbody></table>';
-
-            } catch (error) {
-                console.error('Error loading subscribers:', error);
-            }
-        }
-
-        // Load search analytics
-        async function loadSearchAnalytics() {
-            try {
-                const { data: searches } = await supabase
-                    .from('search_history')
-                    .select('*')
-                    .order('searched_at', { ascending: false })
-                    .limit(100);
-
-                const container = document.getElementById('searchAnalytics');
-
-                if (!searches || searches.length === 0) {
-                    container.innerHTML = '<div class="empty-state">No search history</div>';
-                    return;
-                }
-
-                // Group by query
-                const grouped = {};
-                searches.forEach(s => {
-                    if (!grouped[s.search_query]) {
-                        grouped[s.search_query] = { count: 0, lastSearched: s.searched_at };
-                    }
-                    grouped[s.search_query].count++;
-                });
-
-                const sorted = Object.entries(grouped)
-                    .sort((a, b) => b[1].count - a[1].count);
-
-                container.innerHTML = '<h3>Top Searches</h3><table><thead><tr><th>Query</th><th>Count</th><th>Last Searched</th></tr></thead><tbody>' +
-                    sorted.map(([query, data]) => `
-                        <tr>
-                            <td><strong>${query}</strong></td>
-                            <td>${data.count}</td>
-                            <td>${new Date(data.lastSearched).toLocaleString()}</td>
-                        </tr>
-                    `).join('') +
-                    '</tbody></table>';
-
-            } catch (error) {
-                console.error('Error loading search analytics:', error);
-            }
-        }
-
-        // Load email logs
-        async function loadEmailLogs() {
-            try {
-                const { data: logs } = await supabase
-                    .from('email_logs')
-                    .select('*')
-                    .order('sent_at', { ascending: false })
-                    .limit(50);
-
-                const container = document.getElementById('emailLogs');
-
-                if (!logs || logs.length === 0) {
-                    container.innerHTML = '<div class="empty-state">No emails sent yet</div>';
-                    return;
-                }
-
-                container.innerHTML = '<table><thead><tr><th>Recipient</th><th>Subject</th><th>Type</th><th>Status</th><th>Sent</th></tr></thead><tbody>' +
-                    logs.map(log => `
-                        <tr>
-                            <td>${log.recipient_email}</td>
-                            <td>${log.subject}</td>
-                            <td>${log.email_type}</td>
-                            <td><span class="badge ${log.status === 'sent' ? 'active' : 'inactive'}">${log.status}</span></td>
-                            <td>${new Date(log.sent_at).toLocaleString()}</td>
-                        </tr>
-                    `).join('') +
-                    '</tbody></table>';
-
-            } catch (error) {
-                console.error('Error loading email logs:', error);
-            }
-        }
-
-        // Load word stats
-        async function loadWordStats() {
-            try {
-                const { data: words } = await supabase
-                    .from('words')
-                    .select('*')
-                    .order('views', { ascending: false });
-
-                const container = document.getElementById('wordStats');
-
-                if (!words || words.length === 0) {
-                    container.innerHTML = '<div class="empty-state">No words yet</div>';
-                    return;
-                }
-
-                container.innerHTML = '<h3>Top Performing Words</h3><table><thead><tr><th>Word</th><th>Views</th><th>Favorites</th><th>Comments</th><th>Engagement</th></tr></thead><tbody>' +
-                    words.map(w => {
-                        const engagement = (w.views || 0) + (w.favorites_count || 0) * 2 + (w.comments_count || 0) * 3;
-                        return `
-                            <tr>
-                                <td><strong>${w.word}</strong></td>
-                                <td>👁️ ${w.views || 0}</td>
-                                <td>❤️ ${w.favorites_count || 0}</td>
-                                <td>💬 ${w.comments_count || 0}</td>
-                                <td>${engagement}</td>
-                            </tr>
-                        `;
-                    }).join('') +
-                    '</tbody></table>';
-
-            } catch (error) {
-                console.error('Error loading word stats:', error);
-            }
-        }
-
-        // Schedule word
+        
         document.getElementById('wordForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const word = document.getElementById('word').value.trim();
             const meaning = document.getElementById('meaning').value.trim();
             const scheduledFor = document.getElementById('scheduledFor').value;
             const category = document.getElementById('category').value;
-
+            const status = document.getElementById('status');
+            
             try {
                 const { error } = await supabase
                     .from('words')
@@ -646,61 +182,58 @@
                         meaning,
                         scheduled_for: scheduledFor,
                         category: category || null,
-                        published_by: currentUser.id,
-                        views: 0
+                        is_published: true,
+                        published_by: currentUser.id
                     });
-
+                
                 if (error) throw error;
-
-                showStatus('wordStatus', 'Word scheduled successfully!', 'success');
+                
+                status.textContent = '✅ Word scheduled!';
+                status.className = 'status success';
+                status.style.display = 'block';
+                
                 document.getElementById('wordForm').reset();
                 document.getElementById('scheduledFor').valueAsDate = new Date();
-                
-                loadDashboard();
-
+                loadWords();
             } catch (error) {
-                showStatus('wordStatus', 'Error: ' + error.message, 'error');
+                status.textContent = '❌ ' + error.message;
+                status.className = 'status error';
+                status.style.display = 'block';
             }
         });
-
-        // Delete word
+        
+        async function loadWords() {
+            const { data: words } = await supabase
+                .from('words')
+                .select('*')
+                .order('scheduled_for', { ascending: false });
+            
+            const container = document.getElementById('wordsList');
+            
+            if (!words || words.length === 0) {
+                container.innerHTML = '<p>No words scheduled</p>';
+                return;
+            }
+            
+            container.innerHTML = '<table><thead><tr><th>Date</th><th>Word</th><th>Meaning</th><th>Action</th></tr></thead><tbody>' +
+                words.map(w => `
+                    <tr>
+                        <td>${w.scheduled_for || 'Not set'}</td>
+                        <td><strong>${w.word}</strong></td>
+                        <td>${w.meaning.substring(0, 80)}...</td>
+                        <td><button class="btn-delete" onclick="deleteWord('${w.id}')">Delete</button></td>
+                    </tr>
+                `).join('') +
+                '</tbody></table>';
+        }
+        
         window.deleteWord = async function(id) {
             if (!confirm('Delete this word?')) return;
-
-            try {
-                const { error } = await supabase
-                    .from('words')
-                    .delete()
-                    .eq('id', id);
-
-                if (error) throw error;
-
-                loadDashboard();
-
-            } catch (error) {
-                alert('Error deleting word');
-            }
+            await supabase.from('words').delete().eq('id', id);
+            loadWords();
         }
-
-        // Switch tabs
-        window.switchTab = function(tab) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            document.getElementById(tab).classList.add('active');
-        }
-
-        function showStatus(id, message, type) {
-            const status = document.getElementById(id);
-            status.textContent = message;
-            status.className = 'status ' + type;
-            status.style.display = 'block';
-            setTimeout(() => status.style.display = 'none', 5000);
-        }
-
-        // Initialize
-        checkAdminAccess();
+        
+        checkAdmin();
     </script>
 </body>
 </html>
