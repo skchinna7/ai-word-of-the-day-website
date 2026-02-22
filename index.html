@@ -3,62 +3,528 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word of the Day</title>
+    <title>Word of the Day - Learn New Words Daily</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpg" href="images/logo.jpg">
+    <link rel="icon" type="image/jpg" href="images/logo.jpg" sizes="32x32">
+    
     <style>
-        body {
-            font-family: Georgia, serif;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #fff;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        h1 { font-size: 48px; margin-bottom: 10px; }
-        .word { font-size: 72px; font-weight: bold; margin: 40px 0 20px; }
-        .meaning { font-size: 24px; line-height: 1.6; color: #555; }
-        .nav { margin-bottom: 40px; }
-        .btn { 
+
+        body {
+            font-family: "Georgia", serif;
+            min-height: 100vh;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        body.light { background: #fff; color: #000; }
+        body.dark { background: #000; color: #fff; }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Header with Logo */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .logo-image {
+            width: 50px;
+            height: 50px;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-container:hover .logo-image {
+            transform: scale(1.1);
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo-tagline {
+            font-size: 12px;
+            opacity: 0.7;
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Search Bar */
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 30px auto;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: 2px solid;
+            border-radius: 30px;
+            font-size: 18px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        body.light .search-bar {
+            background: #fff;
+            color: #000;
+            border-color: #ddd;
+        }
+
+        body.dark .search-bar {
+            background: #111;
+            color: #fff;
+            border-color: #333;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            opacity: 0.5;
+        }
+
+        .search-results {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        body.light .search-results { background: #f9f9f9; }
+        body.dark .search-results { background: #111; }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: 2px solid;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
             display: inline-block;
-            padding: 10px 20px; 
-            background: #4CAF50; 
-            color: white; 
-            text-decoration: none; 
-            border-radius: 5px;
-            margin-right: 10px;
+            background: transparent;
+        }
+
+        body.light .btn { border-color: #000; color: #000; }
+        body.dark .btn { border-color: #fff; color: #fff; }
+
+        .btn:hover { transform: scale(1.05); }
+        body.light .btn:hover { background: #000; color: #fff; }
+        body.dark .btn:hover { background: #fff; color: #000; }
+
+        /* Word Display */
+        .word-section {
+            text-align: center;
+            padding: 60px 0;
+        }
+
+        .word {
+            font-size: 80px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            animation: fadeIn 1s;
+        }
+
+        .meaning {
+            font-size: 24px;
+            line-height: 1.6;
+            max-width: 700px;
+            margin: 0 auto 40px;
+            opacity: 0.9;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Newsletter Signup */
+        .newsletter {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            margin: 60px 0;
+            text-align: center;
+        }
+
+        .newsletter h2 {
+            margin-bottom: 10px;
+        }
+
+        .newsletter p {
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .newsletter-form {
+            display: flex;
+            gap: 10px;
+            max-width: 500px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        .newsletter-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+        }
+
+        .newsletter-btn {
+            padding: 12px 30px;
+            background: #fff;
+            color: #667eea;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .newsletter-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            width: 50px;
+            height: 26px;
+            background: #ccc;
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .theme-toggle.active { background: #000; }
+
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s;
+        }
+
+        .theme-toggle.active::before {
+            transform: translateX(24px);
+        }
+
+        /* Stats */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            opacity: 0.7;
+        }
+
+        .stat-item {
+            font-size: 14px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 60px;
+            border-top: 1px solid;
+            opacity: 0.6;
+        }
+
+        body.light .footer { border-color: #ddd; }
+        body.dark .footer { border-color: #333; }
+
+        @media (max-width: 768px) {
+            .word { font-size: 50px; }
+            .meaning { font-size: 18px; }
+            .newsletter-form {
+                flex-direction: column;
+            }
+            .logo-image {
+                width: 40px;
+                height: 40px;
+            }
+            .logo-text {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
-<body>
-    <h1>📚 Word of the Day</h1>
-    
-    <div class="nav">
-        <a href="login.html" class="btn">Login</a>
+<body class="dark">
+    <div class="container">
+        <!-- Header with Logo -->
+        <div class="header">
+            <a href="index.html" class="logo-container">
+                <img src="images/logo.jpg" alt="Word of the Day Logo" class="logo-image">
+                <div>
+                    <div class="logo-text">Word of the Day</div>
+                    <span class="logo-tagline">Expand your vocabulary daily</span>
+                </div>
+            </a>
+            <div class="controls">
+                <a href="login.html" class="btn">🔐 Login</a>
+                <div class="theme-toggle" id="themeToggle"></div>
+                <a href="archive.html" class="btn">📚 Archive</a>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input 
+                type="text" 
+                class="search-bar" 
+                id="searchBar" 
+                placeholder="🔍 Search for a word..."
+            >
+            <span class="search-icon">🔍</span>
+        </div>
+
+        <div class="search-results" id="searchResults"></div>
+
+        <!-- Today's Word -->
+        <div class="word-section" id="wordSection">
+            <div class="word" id="word">Loading...</div>
+            <div class="meaning" id="meaning"></div>
+            <div class="stats" id="stats"></div>
+        </div>
+
+        <!-- Newsletter Signup -->
+        <div class="newsletter">
+            <h2>📧 Get Daily Words in Your Inbox</h2>
+            <p>Never miss a word! Subscribe to receive our word of the day via email.</p>
+            <form class="newsletter-form" id="subscribeForm">
+                <input 
+                    type="email" 
+                    class="newsletter-input" 
+                    id="subscribeEmail"
+                    placeholder="Enter your email" 
+                    required
+                >
+                <button type="submit" class="newsletter-btn">Subscribe</button>
+            </form>
+            <div id="subscribeStatus" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>&copy; 2026 Word of the Day. All rights reserved.</p>
+            <p>Expand your vocabulary, one word at a time.</p>
+        </div>
     </div>
-    
-    <div class="word" id="word">Loading...</div>
-    <div class="meaning" id="meaning"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        const sb = window.supabase.createClient(
-            "https://qzatavslhtkioivemwlk.supabase.co",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE"
-        );
-        
-        const today = new Date().toISOString().split('T')[0];
-        sb.from('words').select('word,meaning').eq('scheduled_for', today).limit(1)
-            .then(r => {
-                if(r.data && r.data[0]) {
-                    document.getElementById('word').textContent = r.data[0].word;
-                    document.getElementById('meaning').textContent = r.data[0].meaning;
-                } else {
-                    document.getElementById('word').textContent = 'No words yet';
-                    document.getElementById('meaning').textContent = 'Add words via admin panel';
+    <script type="module">
+        const SUPABASE_URL = "https://qzatavslhtkioivemwlk.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
+
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentWord = null;
+
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.body.className = savedTheme;
+        if (savedTheme === 'dark') themeToggle.classList.add('active');
+
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.body.classList.contains('dark');
+            document.body.className = isDark ? 'light' : 'dark';
+            themeToggle.classList.toggle('active');
+            localStorage.setItem('theme', isDark ? 'light' : 'dark');
+        });
+
+        // Load today's word
+        async function loadTodayWord() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                
+                let { data: words } = await supabase
+                    .from('words')
+                    .select('*')
+                    .eq('scheduled_for', today)
+                    .eq('is_published', true)
+                    .limit(1);
+
+                if (!words || words.length === 0) {
+                    const { data: latest } = await supabase
+                        .from('words')
+                        .select('*')
+                        .eq('is_published', true)
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+                    
+                    words = latest;
                 }
-            })
-            .catch(e => {
-                document.getElementById('word').textContent = 'Error';
-                document.getElementById('meaning').textContent = e.message;
-            });
+
+                if (!words || words.length === 0) {
+                    document.getElementById('word').textContent = 'No Words Yet';
+                    document.getElementById('meaning').textContent = 'Check back soon!';
+                    return;
+                }
+
+                currentWord = words[0];
+                displayWord(currentWord);
+
+                await supabase
+                    .from('words')
+                    .update({ views: (currentWord.views || 0) + 1 })
+                    .eq('id', currentWord.id);
+
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function displayWord(word) {
+            document.getElementById('word').textContent = word.word;
+            document.getElementById('meaning').textContent = word.meaning;
+            
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-item">👁️ ${word.views || 0} views</div>
+                <div class="stat-item">❤️ ${word.favorites_count || 0} favorites</div>
+                <div class="stat-item">💬 ${word.comments_count || 0} comments</div>
+            `;
+        }
+
+        // Search functionality
+        let searchTimeout;
+        document.getElementById('searchBar').addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                document.getElementById('searchResults').style.display = 'none';
+                return;
+            }
+
+            searchTimeout = setTimeout(() => searchWords(query), 300);
+        });
+
+        async function searchWords(query) {
+            try {
+                const { data: words } = await supabase
+                    .from('words')
+                    .select('*')
+                    .eq('is_published', true)
+                    .or(`word.ilike.%${query}%,meaning.ilike.%${query}%`);
+
+                const resultsDiv = document.getElementById('searchResults');
+                
+                await supabase
+                    .from('search_history')
+                    .insert({
+                        search_query: query,
+                        results_count: words?.length || 0
+                    });
+
+                if (!words || words.length === 0) {
+                    resultsDiv.innerHTML = '<p>No words found</p>';
+                    resultsDiv.style.display = 'block';
+                    return;
+                }
+
+                resultsDiv.innerHTML = `
+                    <h3>Found ${words.length} word${words.length > 1 ? 's' : ''}</h3>
+                    ${words.map(w => `
+                        <div style="padding: 15px; border-bottom: 1px solid #eee;">
+                            <strong style="font-size: 20px;">${w.word}</strong>
+                            <p>${w.meaning}</p>
+                        </div>
+                    `).join('')}
+                `;
+                resultsDiv.style.display = 'block';
+
+            } catch (error) {
+                console.error('Search error:', error);
+            }
+        }
+
+        // Subscribe to newsletter
+        document.getElementById('subscribeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('subscribeEmail').value.trim();
+            const statusDiv = document.getElementById('subscribeStatus');
+
+            try {
+                const { error } = await supabase
+                    .from('subscribers')
+                    .insert({ email });
+
+                if (error) {
+                    if (error.code === '23505') {
+                        statusDiv.textContent = 'You\'re already subscribed!';
+                        statusDiv.style.color = '#ffeb3b';
+                    } else {
+                        throw error;
+                    }
+                } else {
+                    statusDiv.textContent = '✅ Subscribed! Check your email.';
+                    statusDiv.style.color = '#fff';
+                    document.getElementById('subscribeEmail').value = '';
+                }
+
+            } catch (error) {
+                console.error('Subscribe error:', error);
+                statusDiv.textContent = '❌ Error subscribing';
+                statusDiv.style.color = '#f44336';
+            }
+        });
+
+        loadTodayWord();
     </script>
 </body>
 </html>
