@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Database Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        h1 { color: #333; }
+        .test {
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #ddd;
+            border-radius: 5px;
+        }
+        .test.success {
+            border-color: #4CAF50;
+            background: #e8f5e9;
+        }
+        .test.error {
+            border-color: #f44336;
+            background: #ffebee;
+        }
+        .test h3 { margin-top: 0; }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Database Diagnostic Tool</h1>
+        <p>This will check what's wrong with your setup</p>
+        
+        <button onclick="runDiagnostics()">Run All Tests</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = "https://qzatavslhtkioivemwlk.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
+
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function runDiagnostics() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Running tests...</p>';
+            
+            let html = '';
+
+            // Test 1: Supabase Connection
+            html += await testConnection();
+            
+            // Test 2: Check if words table exists
+            html += await testWordsTable();
+            
+            // Test 3: Check table columns
+            html += await testTableColumns();
+            
+            // Test 4: Try to read data
+            html += await testReadData();
+            
+            // Test 5: Try to insert data
+            html += await testInsertData();
+            
+            // Test 6: Check RLS
+            html += await testRLS();
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        async function testConnection() {
+            try {
+                const response = await fetch(SUPABASE_URL + '/rest/v1/', {
+                    headers: {
+                        'apikey': SUPABASE_KEY
+                    }
+                });
+                
+                if (response.ok) {
+                    return makeTest('✅ Supabase Connection', 'success', 'Successfully connected to Supabase');
+                } else {
+                    return makeTest('❌ Supabase Connection', 'error', `HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (err) {
+                return makeTest('❌ Supabase Connection', 'error', err.message);
+            }
+        }
+
+        async function testWordsTable() {
+            try {
+                const { data, error } = await supabase
+                    .from('words')
+                    .select('*')
+                    .limit(0);
+                
+                if (error) {
+                    return makeTest('❌ Words Table', 'error', 
+                        error.message + '\n\nThe table probably doesn\'t exist. Create it with:\n\n' +
+                        'CREATE TABLE public.words (\n' +
+                        '  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n' +
+                        '  word TEXT NOT NULL,\n' +
+                        '  meaning TEXT NOT NULL,\n' +
+                        '  created_at TIMESTAMPTZ DEFAULT NOW()\n' +
+                        ');'
+                    );
+                }
+                
+                return makeTest('✅ Words Table', 'success', 'Table exists and is accessible');
+            } catch (err) {
+                return makeTest('❌ Words Table', 'error', err.message);
+            }
+        }
+
+        async function testTableColumns() {
+            try {
+                const { data, error } = await supabase
+                    .from('words')
+                    .select('*')
+                    .limit(1);
+                
+                if (error) {
+                    return makeTest('⚠️ Table Columns', 'error', 'Cannot check columns: ' + error.message);
+                }
+                
+                const columns = data && data.length > 0 ? Object.keys(data[0]) : ['No data to check columns'];
+                
+                return makeTest('✅ Table Columns', 'success', 
+                    'Available columns: ' + columns.join(', ')
+                );
+            } catch (err) {
+                return makeTest('❌ Table Columns', 'error', err.message);
+            }
+        }
+
+        async function testReadData() {
+            try {
+                const { data, error, count } = await supabase
+                    .from('words')
+                    .select('*', { count: 'exact' });
+                
+                if (error) {
+                    return makeTest('❌ Read Data', 'error', error.message);
+                }
+                
+                if (data && data.length > 0) {
+                    return makeTest('✅ Read Data', 'success', 
+                        `Found ${count} word(s) in database\n\nLatest word: ${data[0].word || 'N/A'}`
+                    );
+                } else {
+                    return makeTest('⚠️ Read Data', 'error', 
+                        'Table is empty. Add a word:\n\n' +
+                        'INSERT INTO public.words (word, meaning) VALUES (\'Test\', \'This is a test word\');'
+                    );
+                }
+            } catch (err) {
+                return makeTest('❌ Read Data', 'error', err.message);
+            }
+        }
+
+        async function testInsertData() {
+            try {
+                const testWord = 'DiagnosticTest_' + Date.now();
+                
+                const { data, error } = await supabase
+                    .from('words')
+                    .insert({
+                        word: testWord,
+                        meaning: 'This is a test word created by diagnostic tool'
+                    })
+                    .select();
+                
+                if (error) {
+                    if (error.message.includes('row-level security')) {
+                        return makeTest('❌ Insert Data (RLS BLOCKED)', 'error', 
+                            'Row Level Security is blocking inserts!\n\n' +
+                            'Fix with:\n\n' +
+                            'ALTER TABLE public.words DISABLE ROW LEVEL SECURITY;'
+                        );
+                    }
+                    return makeTest('❌ Insert Data', 'error', error.message);
+                }
+                
+                // Clean up test word
+                await supabase.from('words').delete().eq('word', testWord);
+                
+                return makeTest('✅ Insert Data', 'success', 'Can successfully add words to database');
+            } catch (err) {
+                return makeTest('❌ Insert Data', 'error', err.message);
+            }
+        }
+
+        async function testRLS() {
+            try {
+                const { data: policies, error } = await supabase
+                    .rpc('pg_policies')
+                    .eq('tablename', 'words');
+                
+                return makeTest('ℹ️ RLS Status', 'success', 
+                    'Check Supabase dashboard: Table Editor → words → View policies'
+                );
+            } catch (err) {
+                return makeTest('ℹ️ RLS Status', 'success', 
+                    'Cannot check RLS programmatically. Check manually in Supabase.'
+                );
+            }
+        }
+
+        function makeTest(title, type, message) {
+            return `
+                <div class="test ${type}">
+                    <h3>${title}</h3>
+                    <pre>${escapeHtml(message)}</pre>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Auto-run on load
+        window.onload = () => {
+            setTimeout(runDiagnostics, 500);
+        };
+    </script>
+</body>
+</html>
