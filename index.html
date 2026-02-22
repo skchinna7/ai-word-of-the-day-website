@@ -1,131 +1,154 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word of the Day</title>
-    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
+    <link rel="icon" type="image/x-icon" href="images/logo.jpg">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: Georgia, serif;
+            background: #fff;
+            color: #000;
+            padding: 40px 20px;
             min-height: 100vh;
-            padding: 20px;
-            transition: background 0.3s, color 0.3s;
         }
-        body.light { background: #fff; color: #000; }
-        body.dark { background: #000; color: #fff; }
-        .container { max-width: 900px; margin: 0 auto; }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 40px;
-            gap: 15px;
+            margin-bottom: 60px;
             flex-wrap: wrap;
+            gap: 20px;
         }
-        .logo { font-size: 24px; font-weight: bold; }
-        .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        
+        h1 {
+            font-size: 28px;
+        }
+        
+        .nav {
+            display: flex;
+            gap: 15px;
+        }
+        
         .btn {
             padding: 10px 20px;
-            border: 2px solid;
-            border-radius: 25px;
+            background: #4CAF50;
+            color: white;
             text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
         }
-        body.light .btn { border-color: #000; color: #000; background: transparent; }
-        body.dark .btn { border-color: #fff; color: #fff; background: transparent; }
-        .btn:hover { transform: scale(1.05); }
-        body.light .btn:hover { background: #000; color: #fff; }
-        body.dark .btn:hover { background: #fff; color: #000; }
-        .theme-toggle {
-            width: 50px; height: 26px; background: #ccc;
-            border-radius: 13px; position: relative; cursor: pointer;
+        
+        .btn:hover {
+            background: #45a049;
         }
-        .theme-toggle.active { background: #000; }
-        .theme-toggle::before {
-            content: ''; position: absolute; width: 20px; height: 20px;
-            border-radius: 50%; background: #fff; top: 3px; left: 3px;
-            transition: transform 0.3s;
+        
+        .word-display {
+            text-align: center;
+            padding: 60px 20px;
         }
-        .theme-toggle.active::before { transform: translateX(24px); }
-        .word-section { text-align: center; padding: 60px 0; }
-        .word { font-size: 80px; font-weight: bold; margin-bottom: 20px; }
-        .meaning { font-size: 24px; line-height: 1.6; max-width: 700px; margin: 0 auto; }
+        
+        .word {
+            font-size: 72px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .meaning {
+            font-size: 22px;
+            line-height: 1.8;
+            color: #555;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
         @media (max-width: 768px) {
-            .word { font-size: 50px; }
+            .word { font-size: 48px; }
             .meaning { font-size: 18px; }
         }
     </style>
 </head>
-<body class="dark">
+<body>
     <div class="container">
         <div class="header">
-            <div class="logo">📚 Word of the Day</div>
-            <div class="controls">
+            <h1>📚 Word of the Day</h1>
+            <div class="nav">
                 <a href="login.html" class="btn">Login</a>
-                <div class="theme-toggle" id="themeToggle"></div>
-                <a href="archive.html" class="btn">Archive</a>
+                <a href="admin.html" class="btn">Admin</a>
             </div>
         </div>
-        <div class="word-section">
+        
+        <div class="word-display">
             <div class="word" id="word">Loading...</div>
             <div class="meaning" id="meaning"></div>
         </div>
+        
+        <div id="error" class="error" style="display:none;"></div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = "https://qzatavslhtkioivemwlk.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
-        
+
         const { createClient } = window.supabase;
         const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        // Theme
-        const themeToggle = document.getElementById('themeToggle');
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.body.className = savedTheme;
-        if (savedTheme === 'dark') themeToggle.classList.add('active');
-        themeToggle.addEventListener('click', () => {
-            const isDark = document.body.classList.contains('dark');
-            document.body.className = isDark ? 'light' : 'dark';
-            themeToggle.classList.toggle('active');
-            localStorage.setItem('theme', isDark ? 'light' : 'dark');
-        });
-        
-        // Load word
+
         async function loadWord() {
             try {
-                const today = new Date().toISOString().split('T')[0];
-                let { data } = await supabase
+                console.log('Connecting to Supabase...');
+                
+                // Just get the latest word - nothing fancy
+                const { data, error } = await supabase
                     .from('words')
-                    .select('word,meaning')
-                    .eq('scheduled_for', today)
+                    .select('word, meaning')
+                    .order('created_at', { ascending: false })
                     .limit(1);
-                
+
+                console.log('Response:', { data, error });
+
+                if (error) {
+                    throw new Error(error.message);
+                }
+
                 if (!data || data.length === 0) {
-                    const latest = await supabase
-                        .from('words')
-                        .select('word,meaning')
-                        .order('created_at', { ascending: false })
-                        .limit(1);
-                    data = latest.data;
-                }
-                
-                if (data && data.length > 0) {
-                    document.getElementById('word').textContent = data[0].word;
-                    document.getElementById('meaning').textContent = data[0].meaning;
-                } else {
                     document.getElementById('word').textContent = 'No Words Yet';
-                    document.getElementById('meaning').textContent = 'Add words via admin panel';
+                    document.getElementById('meaning').textContent = 'Please add words using the admin panel';
+                    return;
                 }
-            } catch (error) {
-                console.error(error);
+
+                document.getElementById('word').textContent = data[0].word;
+                document.getElementById('meaning').textContent = data[0].meaning;
+
+            } catch (err) {
+                console.error('Error:', err);
                 document.getElementById('word').textContent = 'Error';
-                document.getElementById('meaning').textContent = error.message;
+                document.getElementById('meaning').textContent = '';
+                
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = 'Error: ' + err.message + ' - Check console (F12) for details';
+                errorDiv.style.display = 'block';
             }
         }
+
         loadWord();
     </script>
 </body>

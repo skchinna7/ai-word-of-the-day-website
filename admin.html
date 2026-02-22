@@ -1,28 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
-    <link rel="icon" type="image/jpeg" href="images/logo.jpg">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: Arial, sans-serif;
             background: #f5f5f5;
             padding: 20px;
         }
-        .login-required {
-            text-align: center;
-            padding: 100px 20px;
-            background: #fff;
-            border-radius: 10px;
-            max-width: 500px;
-            margin: 100px auto;
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
         }
-        .container { max-width: 1200px; margin: 0 auto; }
+        
         .header {
-            background: #fff;
+            background: white;
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 30px;
@@ -30,210 +27,278 @@
             justify-content: space-between;
             align-items: center;
         }
+        
         h1 { color: #333; }
-        .back-link { color: #4CAF50; text-decoration: none; }
-        .form-section {
-            background: #fff;
+        
+        .btn {
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .section {
+            background: white;
             padding: 30px;
             border-radius: 10px;
             margin-bottom: 30px;
         }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: bold; }
-        input, textarea, select {
+        
+        .field {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input, textarea {
             width: 100%;
             padding: 12px;
             border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
+            font-family: inherit;
         }
-        textarea { min-height: 120px; }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
         button {
+            padding: 12px 30px;
             background: #4CAF50;
             color: white;
-            padding: 14px 32px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
+            font-size: 16px;
         }
-        button:hover { background: #45a049; }
-        .status {
-            margin-top: 20px;
-            padding: 15px;
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        .message {
+            margin-top: 15px;
+            padding: 12px;
             border-radius: 8px;
             display: none;
         }
-        .status.success { background: #d4edda; color: #155724; }
-        .status.error { background: #f8d7da; color: #721c24; }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
+        
         th, td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
-        th { background: #f9f9f9; }
-        .btn-delete { background: #f44336; padding: 8px 16px; border-radius: 6px; border: none; color: white; cursor: pointer; }
+        
+        th {
+            background: #f9f9f9;
+            font-weight: bold;
+        }
+        
+        .btn-delete {
+            padding: 6px 12px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .login-required {
+            text-align: center;
+            padding: 60px 20px;
+        }
     </style>
 </head>
 <body>
-    <div id="loginRequired" class="login-required" style="display:none;">
-        <h1>🔐 Access Denied</h1>
-        <p>You must be an admin to access this page</p>
-        <a href="login.html">Login</a> | <a href="index.html">Home</a>
-    </div>
-    
-    <div id="adminContent" style="display:none;">
-        <div class="container">
+    <div class="container">
+        <div id="loginRequired" class="login-required" style="display:none;">
+            <h1>🔐 Login Required</h1>
+            <p style="margin: 20px 0;">You must be logged in to access this page</p>
+            <a href="login.html" class="btn">Go to Login</a>
+        </div>
+        
+        <div id="adminPanel" style="display:none;">
             <div class="header">
-                <h1>🎛️ Admin Panel</h1>
-                <a href="index.html" class="back-link">← Home</a>
+                <h1>Admin Panel</h1>
+                <div>
+                    <a href="index.html" class="btn">← Home</a>
+                    <button class="btn" onclick="logout()" style="margin-left: 10px;">Logout</button>
+                </div>
             </div>
             
-            <div class="form-section">
-                <h2>Schedule New Word</h2>
-                <form id="wordForm">
-                    <div class="form-group">
+            <div class="section">
+                <h2>Add New Word</h2>
+                <form onsubmit="addWord(event)">
+                    <div class="field">
                         <label>Word *</label>
                         <input type="text" id="word" required>
                     </div>
-                    <div class="form-group">
+                    <div class="field">
                         <label>Meaning *</label>
                         <textarea id="meaning" required></textarea>
                     </div>
-                    <div class="form-group">
-                        <label>Schedule For *</label>
-                        <input type="date" id="scheduledFor" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Category (optional)</label>
-                        <select id="category">
-                            <option value="">None</option>
-                            <option value="General">General</option>
-                            <option value="Business">Business</option>
-                            <option value="Technology">Technology</option>
-                            <option value="Science">Science</option>
-                        </select>
-                    </div>
-                    <button type="submit">💾 Schedule Word</button>
-                    <div class="status" id="status"></div>
+                    <button type="submit">Add Word</button>
+                    <div id="addMessage" class="message"></div>
                 </form>
             </div>
             
-            <div class="form-section">
-                <h2>Scheduled Words</h2>
-                <div id="wordsList"></div>
+            <div class="section">
+                <h2>All Words</h2>
+                <div id="wordsList">Loading...</div>
             </div>
         </div>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = "https://qzatavslhtkioivemwlk.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
-        
+
         const { createClient } = window.supabase;
         const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
         
         let currentUser = null;
-        
-        document.getElementById('scheduledFor').valueAsDate = new Date();
-        
-        async function checkAdmin() {
+
+        async function checkAuth() {
             const { data: { session } } = await supabase.auth.getSession();
             currentUser = session?.user;
             
             if (!currentUser) {
                 document.getElementById('loginRequired').style.display = 'block';
-                return;
+                document.getElementById('adminPanel').style.display = 'none';
+            } else {
+                document.getElementById('loginRequired').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                loadWords();
             }
-            
-            const { data: adminRole } = await supabase
-                .from('admin_roles')
-                .select('role')
-                .eq('user_id', currentUser.id)
-                .single();
-            
-            if (!adminRole || adminRole.role !== 'admin') {
-                document.getElementById('loginRequired').style.display = 'block';
-                return;
-            }
-            
-            document.getElementById('adminContent').style.display = 'block';
-            loadWords();
         }
-        
-        document.getElementById('wordForm').addEventListener('submit', async (e) => {
+
+        async function addWord(e) {
             e.preventDefault();
+            
             const word = document.getElementById('word').value.trim();
             const meaning = document.getElementById('meaning').value.trim();
-            const scheduledFor = document.getElementById('scheduledFor').value;
-            const category = document.getElementById('category').value;
-            const status = document.getElementById('status');
+            const msg = document.getElementById('addMessage');
             
             try {
                 const { error } = await supabase
                     .from('words')
                     .insert({
-                        word,
-                        meaning,
-                        scheduled_for: scheduledFor,
-                        category: category || null,
-                        is_published: true,
-                        published_by: currentUser.id
+                        word: word,
+                        meaning: meaning
                     });
                 
                 if (error) throw error;
                 
-                status.textContent = '✅ Word scheduled!';
-                status.className = 'status success';
-                status.style.display = 'block';
+                msg.textContent = '✅ Word added successfully!';
+                msg.className = 'message success';
+                msg.style.display = 'block';
                 
-                document.getElementById('wordForm').reset();
-                document.getElementById('scheduledFor').valueAsDate = new Date();
+                document.getElementById('word').value = '';
+                document.getElementById('meaning').value = '';
+                
                 loadWords();
+                
             } catch (error) {
-                status.textContent = '❌ ' + error.message;
-                status.className = 'status error';
-                status.style.display = 'block';
+                msg.textContent = '❌ Error: ' + error.message;
+                msg.className = 'message error';
+                msg.style.display = 'block';
             }
-        });
-        
+        }
+
         async function loadWords() {
-            const { data: words } = await supabase
-                .from('words')
-                .select('*')
-                .order('scheduled_for', { ascending: false });
-            
-            const container = document.getElementById('wordsList');
-            
-            if (!words || words.length === 0) {
-                container.innerHTML = '<p>No words scheduled</p>';
-                return;
+            try {
+                const { data, error } = await supabase
+                    .from('words')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                
+                const container = document.getElementById('wordsList');
+                
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<p>No words added yet. Add your first word above!</p>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Word</th>
+                                <th>Meaning</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(w => `
+                                <tr>
+                                    <td><strong>${w.word}</strong></td>
+                                    <td>${w.meaning}</td>
+                                    <td><button class="btn-delete" onclick="deleteWord('${w.id}')">Delete</button></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+                
+            } catch (error) {
+                document.getElementById('wordsList').innerHTML = 
+                    '<p style="color: red;">Error loading words: ' + error.message + '</p>';
             }
-            
-            container.innerHTML = '<table><thead><tr><th>Date</th><th>Word</th><th>Meaning</th><th>Action</th></tr></thead><tbody>' +
-                words.map(w => `
-                    <tr>
-                        <td>${w.scheduled_for || 'Not set'}</td>
-                        <td><strong>${w.word}</strong></td>
-                        <td>${w.meaning.substring(0, 80)}...</td>
-                        <td><button class="btn-delete" onclick="deleteWord('${w.id}')">Delete</button></td>
-                    </tr>
-                `).join('') +
-                '</tbody></table>';
         }
-        
-        window.deleteWord = async function(id) {
+
+        async function deleteWord(id) {
             if (!confirm('Delete this word?')) return;
-            await supabase.from('words').delete().eq('id', id);
-            loadWords();
+            
+            try {
+                const { error } = await supabase
+                    .from('words')
+                    .delete()
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                loadWords();
+                
+            } catch (error) {
+                alert('Error deleting word: ' + error.message);
+            }
         }
-        
-        checkAdmin();
+
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        checkAuth();
     </script>
 </body>
 </html>
