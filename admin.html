@@ -27,6 +27,7 @@
     <form id="form">
         <input type="text" id="word" placeholder="Word" required>
         <textarea id="meaning" placeholder="Meaning" required></textarea>
+        <input type="date" id="scheduled" required>
         <button type="submit">Add Word</button>
     </form>
     <div id="msg" style="display:none"></div>
@@ -47,7 +48,8 @@
             const m = document.getElementById('meaning').value;
             const msg = document.getElementById('msg');
             
-            const {error} = await sb.from('words').insert({word:w, meaning:m});
+            const s = document.getElementById('scheduled').value;
+            const {error} = await sb.from('words').insert({word:w, meaning:m, scheduled_for:s});
             
             if(error) {
                 msg.className = 'message error';

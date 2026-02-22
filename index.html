@@ -44,7 +44,8 @@
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE"
         );
         
-        sb.from('words').select('word,meaning').order('created_at',{ascending:false}).limit(1)
+        const today = new Date().toISOString().split('T')[0];
+        sb.from('words').select('word,meaning').eq('scheduled_for', today).limit(1)
             .then(r => {
                 if(r.data && r.data[0]) {
                     document.getElementById('word').textContent = r.data[0].word;
