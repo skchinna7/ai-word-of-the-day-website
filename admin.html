@@ -17,24 +17,23 @@
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
         th { background: #f5f5f5; }
         .del { background: #f44336; color: white; padding: 6px 12px; border: none; border-radius: 3px; cursor: pointer; }
-        .denied { text-align: center; padding: 60px 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; }
         .user-info { background: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .denied { text-align: center; padding: 60px 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; }
     </style>
 </head>
 <body>
-    <div id="accessDenied" class="denied" style="display:none;">
-        <h1>🔐 Access Denied</h1>
-        <p><strong>Only the admin can access this panel.</strong></p>
-        <p>Current user: <span id="currentUser"></span></p>
+    <div id="notLoggedIn" class="denied" style="display:none;">
+        <h1>🔐 Login Required</h1>
+        <p>You must be logged in as admin to access this page.</p>
         <p style="margin-top: 20px;">
-            <a href="login.html">Login as Admin</a> | <a href="index.html">Go Home</a>
+            <a href="login.html">Login</a> | <a href="index.html">Go Home</a>
         </p>
     </div>
 
     <div id="adminPanel" style="display:none;">
         <h1>Admin Panel</h1>
         <div class="user-info">
-            Logged in as: <strong id="adminEmail"></strong>
+            Logged in as: <strong id="userEmail">Loading...</strong>
             <button onclick="logout()" style="float: right; padding: 8px 16px;">Logout</button>
         </div>
         <a href="index.html">← Back to Home</a>
@@ -59,49 +58,19 @@
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE"
         );
         
-        const ADMIN_EMAIL = "arjunskymax@hotmail.com";
-        let currentUser = null;
-        
-        async function checkAdmin() {
-            try {
-                const { data: { session }, error } = await sb.auth.getSession();
-                
-                if (error) {
-                    console.error('Session error:', error);
-                    showAccessDenied('Error checking session');
-                    return false;
-                }
-                
-                if (!session) {
-                    showAccessDenied('Not logged in');
-                    return false;
-                }
-                
-                currentUser = session.user;
-                console.log('Logged in as:', currentUser.email);
-                
-                if (currentUser.email !== ADMIN_EMAIL) {
-                    showAccessDenied(currentUser.email);
-                    return false;
-                }
-                
-                // Show admin panel
-                document.getElementById('accessDenied').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
-                document.getElementById('adminEmail').textContent = currentUser.email;
-                return true;
-                
-            } catch (err) {
-                console.error('Check admin error:', err);
-                showAccessDenied('Error: ' + err.message);
+        async function checkAuth() {
+            const { data: { session } } = await sb.auth.getSession();
+            
+            if (!session) {
+                document.getElementById('notLoggedIn').style.display = 'block';
+                document.getElementById('adminPanel').style.display = 'none';
                 return false;
             }
-        }
-        
-        function showAccessDenied(user) {
-            document.getElementById('accessDenied').style.display = 'block';
-            document.getElementById('adminPanel').style.display = 'none';
-            document.getElementById('currentUser').textContent = user || 'Not logged in';
+            
+            document.getElementById('notLoggedIn').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            document.getElementById('userEmail').textContent = session.user.email;
+            return true;
         }
         
         async function logout() {
@@ -116,41 +85,33 @@
             const s = document.getElementById('scheduled').value;
             const msg = document.getElementById('msg');
             
-            if (!w || !m || !s) {
-                msg.className = 'message error';
-                msg.textContent = '❌ All fields are required';
-                msg.style.display = 'block';
-                return;
-            }
-            
             try {
-                const {data, error} = await sb.from('words').insert({
+                const {error} = await sb.from('words').insert({
                     word: w, 
                     meaning: m, 
                     scheduled_for: s
                 });
                 
-                if (error) {
-                    throw error;
-                }
+                if (error) throw error;
                 
                 msg.className = 'message success';
-                msg.textContent = '✅ Word added successfully!';
+                msg.textContent = '✅ Word added!';
                 document.getElementById('form').reset();
+                document.getElementById('scheduled').valueAsDate = new Date();
                 loadWords();
                 
             } catch (error) {
-                console.error('Insert error:', error);
+                console.error('Error:', error);
                 msg.className = 'message error';
-                msg.textContent = '❌ Error: ' + error.message;
+                msg.textContent = '❌ ' + error.message;
                 
-                if (error.message.includes('policy')) {
-                    msg.textContent += ' (Database security is blocking this. Make sure you ran the SQL setup and are logged in as admin)';
+                if (error.message.includes('policy') || error.message.includes('permission')) {
+                    msg.textContent = '❌ Permission denied. Only arjunskymax@hotmail.com can add words.';
                 }
             }
             
             msg.style.display = 'block';
-            setTimeout(() => msg.style.display = 'none', 5000);
+            setTimeout(() => msg.style.display = 'none', 4000);
         };
         
         async function loadWords() {
@@ -165,7 +126,7 @@
                 const list = document.getElementById('list');
                 
                 if (!data || data.length === 0) {
-                    list.innerHTML = '<p>No words added yet</p>';
+                    list.innerHTML = '<p>No words yet</p>';
                     return;
                 }
                 
@@ -174,49 +135,42 @@
                 list.innerHTML = '<table><tr><th>Date</th><th>Word</th><th>Meaning</th><th>Action</th></tr>' +
                     data.map(w => {
                         const isToday = w.scheduled_for === today;
-                        return `<tr ${isToday ? 'style="background: #fff3cd;"' : ''}>
-                            <td>${w.scheduled_for || 'N/A'} ${isToday ? '(TODAY)' : ''}</td>
+                        return `<tr ${isToday ? 'style="background: #fff9c4;"' : ''}>
+                            <td>${w.scheduled_for || 'N/A'} ${isToday ? '<b>(TODAY)</b>' : ''}</td>
                             <td><b>${w.word}</b></td>
-                            <td>${w.meaning.substring(0, 80)}${w.meaning.length > 80 ? '...' : ''}</td>
+                            <td>${w.meaning.substring(0, 60)}${w.meaning.length > 60 ? '...' : ''}</td>
                             <td><button class="del" onclick="deleteWord('${w.id}')">Delete</button></td>
                         </tr>`;
                     }).join('') +
                     '</table>';
                     
             } catch (error) {
-                console.error('Load error:', error);
-                document.getElementById('list').innerHTML = '<p style="color: red;">Error loading words: ' + error.message + '</p>';
+                console.error('Error:', error);
+                document.getElementById('list').innerHTML = '<p style="color: red;">Error: ' + error.message + '</p>';
             }
         }
         
         window.deleteWord = async (id) => {
-            if (!confirm('Are you sure you want to delete this word?')) return;
+            if (!confirm('Delete this word?')) return;
             
             try {
                 const {error} = await sb.from('words').delete().eq('id', id);
                 
-                if (error) {
-                    throw error;
-                }
+                if (error) throw error;
                 
-                console.log('Word deleted');
                 loadWords();
                 
             } catch (error) {
-                console.error('Delete error:', error);
-                alert('Error deleting: ' + error.message + '\n\nMake sure you ran the SQL security setup and are logged in as admin.');
+                console.error('Error:', error);
+                alert('Delete failed: ' + error.message + '\n\nOnly arjunskymax@hotmail.com can delete words.');
             }
         };
         
-        // Set today's date as default
+        // Set today as default
         document.getElementById('scheduled').valueAsDate = new Date();
         
         // Initialize
-        checkAdmin().then(isAdmin => {
-            if (isAdmin) {
-                loadWords();
-            }
-        });
+        checkAuth().then(ok => { if(ok) loadWords(); });
     </script>
 </body>
 </html>
