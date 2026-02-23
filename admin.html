@@ -1,25 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <!-- Character encoding -->
     <meta charset="UTF-8">
-    <title>Admin Panel</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 900px; margin: 50px auto; padding: 20px; }
-        h1 { margin-bottom: 30px; }
-        input, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box; }
-        textarea { height: 100px; font-family: inherit; }
-        button { padding: 12px 24px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background: #45a049; }
-        .message { padding: 15px; margin: 20px 0; border-radius: 5px; }
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
-        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background: #f5f5f5; }
-        .del { background: #f44336; color: white; padding: 6px 12px; border: none; border-radius: 3px; cursor: pointer; }
-        .user-info { background: #e3f2fd; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
-        .denied { text-align: center; padding: 60px 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 10px; }
-    </style>
+    <!-- Viewport for responsive design -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title><!-- Page title (also in <title>) -->
+    <meta name="title" content="Word of the Day - Learn New Words Daily">
+    <!-- Page description for search engines -->
+    <meta name="description" content="Discover a new word every day with definitions, examples, and pronunciation guides.">
+    <!-- Keywords (less important now) -->
+    <meta name="keywords" content="word of the day, vocabulary, learning, english words, dictionary">
+    <!-- Author -->
+    <meta name="author" content="Your Name or Organization">
+    <!-- Robots directive -->
+    <meta name="robots" content="index, follow">
+    <!-- Open Graph protocol -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.wotd.in/">
+    <meta property="og:title" content="Word of the Day - Learn New Words Daily">
+    <meta property="og:description" content="Discover a new word every day with definitions, examples, and pronunciation guides.">
+    <meta property="og:image" content="https://www.wotd.in/images/logo.jpg">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://yourwebsite.com/">
+    <meta name="twitter:title" content="Word of the Day - Learn New Words Daily">
+    <meta name="twitter:description" content="Discover a new word every day with definitions, examples, and pronunciation guides.">
+    <meta name="twitter:image" content="https://yourwebsite.com/images/logo.jpg">
+
+        <!-- Prevent XSS attacks -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self';">
+
+    <!-- Cache control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpg" href="images/logo.jpg">
+    <link rel="icon" type="image/jpg" href="images/logo.jpg" sizes="32x32">
+    <link rel="stylesheet" href="styles/admin.css">
+    <link rel="canonical" href="https://www.wotd.in/index/">
+    <link rel="alternate" hreflang="es" href="https://www.wotd.in/es/">
+    <link rel="alternate" hreflang="fr" href="https://www.wotd.in/fr/">
 </head>
 <body>
     <div id="notLoggedIn" class="denied" style="display:none;">
@@ -31,32 +58,83 @@
     </div>
 
     <div id="adminPanel" style="display:none;">
-        <h1>Admin Panel</h1>
+        <h1>🎛️ Admin Panel</h1>
         <div class="user-info">
-            Logged in as: <strong id="userEmail">Loading...</strong>
-            <button onclick="logout()" style="float: right; padding: 8px 16px;">Logout</button>
+            <div>
+                Logged in as: <strong id="userEmail">Loading...</strong>
+            </div>
+            <div>
+                <a href="index.html" style="margin-right: 10px;">← Home</a>
+                <button onclick="logout()" style="padding: 8px 16px;">Logout</button>
+                <img src="images/logo.jpg" alt="Word of the Day Logo" class="logo-image">
+            </div>
         </div>
-        <a href="index.html">← Back to Home</a>
         
-        <h2 style="margin-top: 40px;">Add New Word</h2>
-        <form id="form">
-            <input type="text" id="word" placeholder="Word" required>
-            <textarea id="meaning" placeholder="Meaning" required></textarea>
-            <input type="date" id="scheduled" required>
-            <button type="submit">Add Word</button>
-        </form>
-        <div id="msg" style="display:none"></div>
+        <div class="form-container">
+            <h2 id="formTitle">Add New Word</h2>
+            <form id="wordForm">
+                <input type="hidden" id="editId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Word *</label>
+                        <input type="text" id="word" required>
+                        <button type="button" class="btn-secondary" onclick="fetchPhonetics()" style="margin-top: 10px; width: 100%;">
+                            🔊 Auto-Get Phonetics
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Scheduled Date *</label>
+                        <input type="date" id="scheduled" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Phonetic (e.g., /səˈrɛndɪpɪti/)</label>
+                        <input type="text" id="phonetic" placeholder="Will auto-fill when you click button above">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Pronunciation (e.g., ser-en-dip-i-ty)</label>
+                        <input type="text" id="pronunciation" placeholder="Will auto-fill when you click button above">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Meaning *</label>
+                    <textarea id="meaning" required></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" id="submitBtn">Add Word</button>
+                    <button type="button" class="btn-secondary" onclick="cancelEdit()" id="cancelBtn" style="display: none;">Cancel</button>
+                </div>
+            </form>
+            <div id="msg" style="display:none"></div>
+        </div>
         
-        <h2>All Words</h2>
-        <div id="list">Loading...</div>
+        <div class="table-container">
+            <h2>All Words</h2>
+            <div id="list">Loading...</div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const sb = window.supabase.createClient(
             "https://qzatavslhtkioivemwlk.supabase.co",
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE"
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE",
+            {
+                auth: {
+                    persistSession: true,
+                    autoRefreshToken: true
+                }
+            }
         );
+        
+        let isEditing = false;
         
         async function checkAuth() {
             const { data: { session } } = await sb.auth.getSession();
@@ -78,41 +156,155 @@
             window.location.href = 'index.html';
         }
         
-        document.getElementById('form').onsubmit = async (e) => {
+        // Fetch phonetics from Free Dictionary API
+        async function fetchPhonetics() {
+            const wordInput = document.getElementById('word').value.trim();
+            const phoneticInput = document.getElementById('phonetic');
+            const pronunciationInput = document.getElementById('pronunciation');
+            const msg = document.getElementById('msg');
+            
+            if (!wordInput) {
+                msg.textContent = '⚠️ Please enter a word first';
+                msg.className = 'message info';
+                msg.style.display = 'block';
+                setTimeout(() => msg.style.display = 'none', 3000);
+                return;
+            }
+            
+            try {
+                msg.textContent = '🔄 Fetching phonetics...';
+                msg.className = 'message info';
+                msg.style.display = 'block';
+                
+                const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${wordInput}`);
+                
+                if (!response.ok) {
+                    throw new Error('Word not found in dictionary');
+                }
+                
+                const data = await response.json();
+                
+                if (data && data[0]) {
+                    const entry = data[0];
+                    
+                    // Get phonetic
+                    if (entry.phonetic) {
+                        phoneticInput.value = entry.phonetic;
+                    } else if (entry.phonetics && entry.phonetics[0] && entry.phonetics[0].text) {
+                        phoneticInput.value = entry.phonetics[0].text;
+                    }
+                    
+                    // Create pronunciation from phonetic
+                    if (phoneticInput.value) {
+                        const simplified = phoneticInput.value
+                            .replace(/[\/\[\]]/g, '')
+                            .replace(/ˈ/g, '')
+                            .replace(/ˌ/g, '');
+                        pronunciationInput.value = simplified;
+                    }
+                    
+                    msg.textContent = '✅ Phonetics loaded!';
+                    msg.className = 'message success';
+                    setTimeout(() => msg.style.display = 'none', 2000);
+                } else {
+                    throw new Error('No phonetic data available');
+                }
+            } catch (error) {
+                console.error('Phonetics error:', error);
+                msg.textContent = '⚠️ Could not fetch phonetics. Please enter manually.';
+                msg.className = 'message info';
+                setTimeout(() => msg.style.display = 'none', 3000);
+            }
+        }
+        
+        document.getElementById('wordForm').onsubmit = async (e) => {
             e.preventDefault();
+            
             const w = document.getElementById('word').value.trim();
             const m = document.getElementById('meaning').value.trim();
             const s = document.getElementById('scheduled').value;
+            const phonetic = document.getElementById('phonetic').value.trim();
+            const pronunciation = document.getElementById('pronunciation').value.trim();
+            const editId = document.getElementById('editId').value;
             const msg = document.getElementById('msg');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = isEditing ? 'Updating...' : 'Adding...';
             
             try {
-                const {error} = await sb.from('words').insert({
+                const wordData = {
                     word: w, 
                     meaning: m, 
-                    scheduled_for: s
-                });
+                    scheduled_for: s,
+                    phonetic: phonetic || null,
+                    pronunciation: pronunciation || null
+                };
+                
+                let error;
+                
+                if (isEditing && editId) {
+                    // Update existing word
+                    ({ error } = await sb.from('words').update(wordData).eq('id', editId));
+                } else {
+                    // Insert new word
+                    ({ error } = await sb.from('words').insert(wordData));
+                }
                 
                 if (error) throw error;
                 
                 msg.className = 'message success';
-                msg.textContent = '✅ Word added!';
-                document.getElementById('form').reset();
+                msg.textContent = isEditing ? '✅ Word updated!' : '✅ Word added!';
+                document.getElementById('wordForm').reset();
                 document.getElementById('scheduled').valueAsDate = new Date();
+                cancelEdit();
                 loadWords();
                 
             } catch (error) {
                 console.error('Error:', error);
                 msg.className = 'message error';
                 msg.textContent = '❌ ' + error.message;
-                
-                if (error.message.includes('policy') || error.message.includes('permission')) {
-                    msg.textContent = '❌ Permission denied. Only arjunskymax@hotmail.com can add words.';
-                }
             }
             
             msg.style.display = 'block';
             setTimeout(() => msg.style.display = 'none', 4000);
+            submitBtn.disabled = false;
+            submitBtn.textContent = isEditing ? 'Update Word' : 'Add Word';
         };
+        
+        window.editWord = function(id) {
+            sb.from('words').select('*').eq('id', id).single()
+                .then(({ data, error }) => {
+                    if (error) throw error;
+                    
+                    isEditing = true;
+                    document.getElementById('formTitle').textContent = 'Edit Word';
+                    document.getElementById('editId').value = data.id;
+                    document.getElementById('word').value = data.word;
+                    document.getElementById('meaning').value = data.meaning;
+                    document.getElementById('scheduled').value = data.scheduled_for;
+                    document.getElementById('phonetic').value = data.phonetic || '';
+                    document.getElementById('pronunciation').value = data.pronunciation || '';
+                    document.getElementById('submitBtn').textContent = 'Update Word';
+                    document.getElementById('cancelBtn').style.display = 'inline-block';
+                    
+                    // Scroll to form
+                    document.getElementById('wordForm').scrollIntoView({ behavior: 'smooth' });
+                })
+                .catch(error => {
+                    alert('Error loading word: ' + error.message);
+                });
+        };
+        
+        function cancelEdit() {
+            isEditing = false;
+            document.getElementById('formTitle').textContent = 'Add New Word';
+            document.getElementById('editId').value = '';
+            document.getElementById('wordForm').reset();
+            document.getElementById('scheduled').valueAsDate = new Date();
+            document.getElementById('submitBtn').textContent = 'Add Word';
+            document.getElementById('cancelBtn').style.display = 'none';
+        }
         
         async function loadWords() {
             try {
@@ -132,14 +324,18 @@
                 
                 const today = new Date().toISOString().split('T')[0];
                 
-                list.innerHTML = '<table><tr><th>Date</th><th>Word</th><th>Meaning</th><th>Action</th></tr>' +
+                list.innerHTML = '<table><tr><th>Date</th><th>Word</th><th>Phonetic</th><th>Meaning</th><th>Actions</th></tr>' +
                     data.map(w => {
                         const isToday = w.scheduled_for === today;
-                        return `<tr ${isToday ? 'style="background: #fff9c4;"' : ''}>
+                        return `<tr class="${isToday ? 'today-row' : ''}">
                             <td>${w.scheduled_for || 'N/A'} ${isToday ? '<b>(TODAY)</b>' : ''}</td>
-                            <td><b>${w.word}</b></td>
-                            <td>${w.meaning.substring(0, 60)}${w.meaning.length > 60 ? '...' : ''}</td>
-                            <td><button class="del" onclick="deleteWord('${w.id}')">Delete</button></td>
+                            <td><b>${w.word}</b>${w.pronunciation ? `<br><span style="font-size: 12px; color: #666;">${w.pronunciation}</span>` : ''}</td>
+                            <td style="font-style: italic; color: #666;">${w.phonetic || '-'}</td>
+                            <td>${w.meaning.substring(0, 80)}${w.meaning.length > 80 ? '...' : ''}</td>
+                            <td>
+                                <button class="btn-edit" onclick="editWord('${w.id}')">Edit</button>
+                                <button class="btn-delete" onclick="deleteWord('${w.id}')">Delete</button>
+                            </td>
                         </tr>`;
                     }).join('') +
                     '</table>';
@@ -155,14 +351,10 @@
             
             try {
                 const {error} = await sb.from('words').delete().eq('id', id);
-                
                 if (error) throw error;
-                
                 loadWords();
-                
             } catch (error) {
-                console.error('Error:', error);
-                alert('Delete failed: ' + error.message + '\n\nOnly arjunskymax@hotmail.com can delete words.');
+                alert('Delete failed: ' + error.message);
             }
         };
         

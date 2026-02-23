@@ -1,344 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <!-- Character encoding -->
     <meta charset="UTF-8">
+    <!-- Viewport for responsive design -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word of the Day - Learn New Words Daily</title>
-    
+    <meta name="title" content="Word of the Day - Learn New Words Daily">
+    <!-- Page description for search engines -->
+    <meta name="description" content="Discover a new word every day with definitions, examples, and pronunciation guides.">
+    <!-- Keywords (less important now) -->
+    <meta name="keywords" content="word of the day, vocabulary, learning, english words, dictionary">
+    <!-- Author -->
+    <meta name="author" content="Your Name or Organization">
+    <!-- Robots directive -->
+    <meta name="robots" content="index, follow">
+    <!-- Open Graph protocol -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.wotd.in/">
+    <meta property="og:title" content="Word of the Day - Learn New Words Daily">
+    <meta property="og:description" content="Discover a new word every day with definitions, examples, and pronunciation guides.">
+    <meta property="og:image" content="https://www.wotd.in/images/logo.jpg">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://yourwebsite.com/">
+    <meta name="twitter:title" content="Word of the Day - Learn New Words Daily">
+    <meta name="twitter:description" content="Discover a new word every day with definitions, examples, and pronunciation guides.">
+    <meta name="twitter:image" content="https://yourwebsite.com/images/logo.jpg">
+        <!-- Prevent XSS attacks -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self';">
+    <!-- Cache control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">    
     <!-- Favicon -->
     <link rel="icon" type="image/jpg" href="images/logo.jpg">
     <link rel="icon" type="image/jpg" href="images/logo.jpg" sizes="32x32">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: "Georgia", serif;
-            min-height: 100vh;
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-
-        body.light { background: #fff; color: #000; }
-        body.dark { background: #000; color: #fff; }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        /* Header with Logo */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .logo-image {
-            width: 50px;
-            height: 50px;
-            transition: transform 0.3s ease;
-        }
-
-        .logo-container:hover .logo-image {
-            transform: scale(1.1);
-        }
-
-        .logo-text {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .logo-tagline {
-            font-size: 12px;
-            opacity: 0.7;
-            display: block;
-        }
-
-        .controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        /* ADDED: User info badge */
-        .user-badge {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        body.light .user-badge { 
-            background: #e3f2fd; 
-            color: #1976d2; 
-        }
-
-        body.dark .user-badge { 
-            background: #1a237e; 
-            color: #64b5f6; 
-        }
-
-        /* Search Bar */
-        .search-container {
-            position: relative;
-            width: 100%;
-            max-width: 600px;
-            margin: 30px auto;
-        }
-
-        .search-bar {
-            width: 100%;
-            padding: 15px 50px 15px 20px;
-            border: 2px solid;
-            border-radius: 30px;
-            font-size: 18px;
-            font-family: inherit;
-            transition: all 0.3s;
-        }
-
-        body.light .search-bar {
-            background: #fff;
-            color: #000;
-            border-color: #ddd;
-        }
-
-        body.dark .search-bar {
-            background: #111;
-            color: #fff;
-            border-color: #333;
-        }
-
-        .search-bar:focus {
-            outline: none;
-            border-color: #4CAF50;
-        }
-
-        .search-icon {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 20px;
-            opacity: 0.5;
-        }
-
-        .search-results {
-            margin-top: 20px;
-            padding: 20px;
-            border-radius: 10px;
-            display: none;
-        }
-
-        body.light .search-results { background: #f9f9f9; }
-        body.dark .search-results { background: #111; }
-
-        /* Buttons */
-        .btn {
-            padding: 10px 20px;
-            border: 2px solid;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            background: transparent;
-        }
-
-        body.light .btn { border-color: #000; color: #000; }
-        body.dark .btn { border-color: #fff; color: #fff; }
-
-        .btn:hover { transform: scale(1.05); }
-        body.light .btn:hover { background: #000; color: #fff; }
-        body.dark .btn:hover { background: #fff; color: #000; }
-
-        /* ADDED: Logout button style */
-        .btn-logout {
-            padding: 10px 20px;
-            border: 2px solid #f44336;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            background: transparent;
-            color: #f44336;
-        }
-
-        .btn-logout:hover {
-            background: #f44336;
-            color: #fff;
-            transform: scale(1.05);
-        }
-
-        /* Word Display */
-        .word-section {
-            text-align: center;
-            padding: 60px 0;
-        }
-
-        .word {
-            font-size: 80px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            animation: fadeIn 1s;
-        }
-
-        .meaning {
-            font-size: 24px;
-            line-height: 1.6;
-            max-width: 700px;
-            margin: 0 auto 40px;
-            opacity: 0.9;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Newsletter Signup */
-        .newsletter {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            padding: 40px;
-            border-radius: 15px;
-            margin: 60px 0;
-            text-align: center;
-        }
-
-        .newsletter h2 {
-            margin-bottom: 10px;
-        }
-
-        .newsletter p {
-            margin-bottom: 20px;
-            opacity: 0.9;
-        }
-
-        .newsletter-form {
-            display: flex;
-            gap: 10px;
-            max-width: 500px;
-            margin: 0 auto;
-            flex-wrap: wrap;
-        }
-
-        .newsletter-input {
-            flex: 1;
-            min-width: 200px;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-        }
-
-        .newsletter-btn {
-            padding: 12px 30px;
-            background: #fff;
-            color: #667eea;
-            border: none;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .newsletter-btn:hover {
-            transform: scale(1.05);
-        }
-
-        /* Theme Toggle */
-        .theme-toggle {
-            width: 50px;
-            height: 26px;
-            background: #ccc;
-            border-radius: 13px;
-            position: relative;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .theme-toggle.active { background: #000; }
-
-        .theme-toggle::before {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #fff;
-            top: 3px;
-            left: 3px;
-            transition: transform 0.3s;
-        }
-
-        .theme-toggle.active::before {
-            transform: translateX(24px);
-        }
-
-        /* Stats */
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            margin: 30px 0;
-            flex-wrap: wrap;
-            opacity: 0.7;
-        }
-
-        .stat-item {
-            font-size: 14px;
-        }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            padding: 40px 20px;
-            margin-top: 60px;
-            border-top: 1px solid;
-            opacity: 0.6;
-        }
-
-        body.light .footer { border-color: #ddd; }
-        body.dark .footer { border-color: #333; }
-
-        @media (max-width: 768px) {
-            .word { font-size: 50px; }
-            .meaning { font-size: 18px; }
-            .newsletter-form {
-                flex-direction: column;
-            }
-            .logo-image {
-                width: 40px;
-                height: 40px;
-            }
-            .logo-text {
-                font-size: 18px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="canonical" href="https://www.wotd.in/index/">
+    <link rel="alternate" hreflang="es" href="https://www.wotd.in/es/">
+    <link rel="alternate" hreflang="fr" href="https://www.wotd.in/fr/">
 </head>
 <body class="dark">
     <div class="container">
@@ -351,7 +54,6 @@
                     <span class="logo-tagline">Expand your vocabulary daily</span>
                 </div>
             </a>
-            <!-- ENHANCED: Dynamic controls that change based on login status -->
             <div class="controls" id="headerControls">
                 <a href="login.html" class="btn">🔐 Login</a>
                 <div class="theme-toggle" id="themeToggle"></div>
@@ -374,9 +76,42 @@
 
         <!-- Today's Word -->
         <div class="word-section" id="wordSection">
-            <div class="word" id="word">Loading...</div>
-            <div class="meaning" id="meaning"></div>
-            <div class="stats" id="stats"></div>
+            <div class="word-card">
+                <div class="word" id="word">Loading...</div>
+                <div class="phonetic" id="phonetic"></div>
+                <div class="pronunciation" id="pronunciation"></div>
+                <div class="stats" id="stats"></div>
+            </div>
+            
+            <div class="meaning-card">
+                <div class="meaning" id="meaning"></div>
+            </div>
+        </div>
+
+        <!-- Trending Words -->
+        <div class="trending-section">
+            <h2 class="section-title">🔥 Trending Words</h2>
+            
+            <div class="trending-tabs">
+                <div class="trending-tab active" onclick="switchTrending('week')">This Week</div>
+                <div class="trending-tab" onclick="switchTrending('month')">This Month</div>
+            </div>
+            
+            <div id="trendingWeek" class="trending-list active">
+                <div id="weeklyTrending">Loading trending words...</div>
+            </div>
+            
+            <div id="trendingMonth" class="trending-list">
+                <div id="monthlyTrending">Loading trending words...</div>
+            </div>
+        </div>
+
+        <!-- Previous Words -->
+        <div class="previous-words-section">
+            <h2 class="section-title">📖 Previous Words</h2>
+            <div class="words-grid" id="previousWords">
+                Loading previous words...
+            </div>
         </div>
 
         <!-- Newsletter Signup -->
@@ -433,7 +168,7 @@
             localStorage.setItem('theme', isDark ? 'light' : 'dark');
         });
 
-        // ===== ADDED: Check login status and update header =====
+        // Check login status
         async function checkLoginStatus() {
             try {
                 const { data: { session }, error } = await supabase.auth.getSession();
@@ -449,7 +184,6 @@
                     currentUser = session.user;
                     console.log('User logged in:', currentUser.email);
                     
-                    // Update header to show logged-in state
                     controls.innerHTML = `
                         <div class="user-badge">
                             <span>👤</span>
@@ -461,7 +195,6 @@
                         <a href="archive.html" class="btn">📚 Archive</a>
                     `;
                     
-                    // Re-attach theme toggle event after updating HTML
                     const newThemeToggle = document.getElementById('themeToggle');
                     newThemeToggle.addEventListener('click', () => {
                         const isDark = document.body.classList.contains('dark');
@@ -469,22 +202,16 @@
                         newThemeToggle.classList.toggle('active');
                         localStorage.setItem('theme', isDark ? 'light' : 'dark');
                     });
-                } else {
-                    console.log('No user logged in');
-                    // Keep default login button (already in HTML)
                 }
             } catch (err) {
                 console.error('Check login error:', err);
             }
         }
 
-        // ===== ADDED: Logout function =====
         window.handleLogout = async function() {
             try {
                 const { error } = await supabase.auth.signOut();
                 if (error) throw error;
-                
-                console.log('Logged out successfully');
                 window.location.reload();
             } catch (error) {
                 console.error('Logout error:', error);
@@ -522,21 +249,28 @@
                 currentWord = words[0];
                 displayWord(currentWord);
 
-                // Update view count
+                // Track view
                 await supabase
                     .from('words')
                     .update({ views: (currentWord.views || 0) + 1 })
                     .eq('id', currentWord.id);
+                
+                // Track in trends table (if exists)
+                try {
+                    await supabase.rpc('track_word_view', { p_word_id: currentWord.id });
+                } catch (e) {
+                    console.log('Trend tracking skipped');
+                }
 
             } catch (error) {
                 console.error('Error loading word:', error);
-                document.getElementById('word').textContent = 'Error';
-                document.getElementById('meaning').textContent = error.message;
             }
         }
 
         function displayWord(word) {
             document.getElementById('word').textContent = word.word;
+            document.getElementById('phonetic').textContent = word.phonetic ? `/${word.phonetic}/` : '';
+            document.getElementById('pronunciation').textContent = word.pronunciation || '';
             document.getElementById('meaning').textContent = word.meaning;
             
             document.getElementById('stats').innerHTML = `
@@ -545,6 +279,114 @@
                 <div class="stat-item">💬 ${word.comments_count || 0} comments</div>
             `;
         }
+
+        // Load previous words
+        async function loadPreviousWords() {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                
+                const { data: words } = await supabase
+                    .from('words')
+                    .select('*')
+                    .lt('scheduled_for', today)
+                    .order('scheduled_for', { ascending: false })
+                    .limit(6);
+                
+                const container = document.getElementById('previousWords');
+                
+                if (!words || words.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; opacity: 0.6;">No previous words yet</p>';
+                    return;
+                }
+                
+                container.innerHTML = words.map(w => `
+                    <div class="word-item">
+                        <div class="word-item-title">${w.word}</div>
+                        <div class="word-item-date">📅 ${new Date(w.scheduled_for).toLocaleDateString()}</div>
+                        <div class="word-item-meaning">${w.meaning.substring(0, 100)}${w.meaning.length > 100 ? '...' : ''}</div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading previous words:', error);
+            }
+        }
+
+        // Load trending words
+        async function loadTrendingWords() {
+            try {
+                // Weekly trending (last 7 days)
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                
+                const { data: weeklyWords } = await supabase
+                    .from('words')
+                    .select('*')
+                    .gte('scheduled_for', weekAgo.toISOString().split('T')[0])
+                    .order('views', { ascending: false })
+                    .limit(5);
+                
+                const weeklyContainer = document.getElementById('weeklyTrending');
+                
+                if (weeklyWords && weeklyWords.length > 0) {
+                    weeklyContainer.innerHTML = weeklyWords.map((w, i) => `
+                        <div class="trending-item">
+                            <div class="trending-rank">#${i + 1}</div>
+                            <div class="trending-content">
+                                <div class="trending-word">${w.word}</div>
+                                <div class="trending-stats">👁️ ${w.views || 0} views • 📅 ${new Date(w.scheduled_for).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    weeklyContainer.innerHTML = '<p style="text-align: center; opacity: 0.6;">No data yet</p>';
+                }
+                
+                // Monthly trending (last 30 days)
+                const monthAgo = new Date();
+                monthAgo.setDate(monthAgo.getDate() - 30);
+                
+                const { data: monthlyWords } = await supabase
+                    .from('words')
+                    .select('*')
+                    .gte('scheduled_for', monthAgo.toISOString().split('T')[0])
+                    .order('views', { ascending: false })
+                    .limit(5);
+                
+                const monthlyContainer = document.getElementById('monthlyTrending');
+                
+                if (monthlyWords && monthlyWords.length > 0) {
+                    monthlyContainer.innerHTML = monthlyWords.map((w, i) => `
+                        <div class="trending-item">
+                            <div class="trending-rank">#${i + 1}</div>
+                            <div class="trending-content">
+                                <div class="trending-word">${w.word}</div>
+                                <div class="trending-stats">👁️ ${w.views || 0} views • 📅 ${new Date(w.scheduled_for).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    monthlyContainer.innerHTML = '<p style="text-align: center; opacity: 0.6;">No data yet</p>';
+                }
+                
+            } catch (error) {
+                console.error('Error loading trending words:', error);
+            }
+        }
+
+        // Switch trending tabs
+        window.switchTrending = function(period) {
+            document.querySelectorAll('.trending-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.trending-list').forEach(list => list.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            
+            if (period === 'week') {
+                document.getElementById('trendingWeek').classList.add('active');
+            } else {
+                document.getElementById('trendingMonth').classList.add('active');
+            }
+        };
 
         // Search functionality
         let searchTimeout;
@@ -570,7 +412,6 @@
 
                 const resultsDiv = document.getElementById('searchResults');
                 
-                // Log search to analytics (only if table exists)
                 try {
                     await supabase
                         .from('search_history')
@@ -579,7 +420,7 @@
                             results_count: words?.length || 0
                         });
                 } catch (e) {
-                    console.log('Search logging skipped (table may not exist)');
+                    console.log('Search logging skipped');
                 }
 
                 if (!words || words.length === 0) {
@@ -593,6 +434,7 @@
                     ${words.map(w => `
                         <div style="padding: 15px; border-bottom: 1px solid #eee;">
                             <strong style="font-size: 20px;">${w.word}</strong>
+                            ${w.phonetic ? `<span style="color: #666; font-style: italic; margin-left: 10px;">/${w.phonetic}/</span>` : ''}
                             <p>${w.meaning}</p>
                         </div>
                     `).join('')}
@@ -636,16 +478,14 @@
             }
         });
 
-        // ===== ADDED: Initialize everything on page load =====
+        // Initialize everything
         async function initializePage() {
-            // Check login status first
             await checkLoginStatus();
-            
-            // Then load the word
             await loadTodayWord();
+            await loadPreviousWords();
+            await loadTrendingWords();
         }
 
-        // Start initialization
         initializePage();
     </script>
 </body>
