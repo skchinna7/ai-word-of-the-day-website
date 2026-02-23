@@ -77,6 +77,26 @@
             flex-wrap: wrap;
         }
 
+        /* ADDED: User info badge */
+        .user-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        body.light .user-badge { 
+            background: #e3f2fd; 
+            color: #1976d2; 
+        }
+
+        body.dark .user-badge { 
+            background: #1a237e; 
+            color: #64b5f6; 
+        }
+
         /* Search Bar */
         .search-container {
             position: relative;
@@ -150,6 +170,26 @@
         .btn:hover { transform: scale(1.05); }
         body.light .btn:hover { background: #000; color: #fff; }
         body.dark .btn:hover { background: #fff; color: #000; }
+
+        /* ADDED: Logout button style */
+        .btn-logout {
+            padding: 10px 20px;
+            border: 2px solid #f44336;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            background: transparent;
+            color: #f44336;
+        }
+
+        .btn-logout:hover {
+            background: #f44336;
+            color: #fff;
+            transform: scale(1.05);
+        }
 
         /* Word Display */
         .word-section {
@@ -311,7 +351,8 @@
                     <span class="logo-tagline">Expand your vocabulary daily</span>
                 </div>
             </a>
-            <div class="controls">
+            <!-- ENHANCED: Dynamic controls that change based on login status -->
+            <div class="controls" id="headerControls">
                 <a href="login.html" class="btn">🔐 Login</a>
                 <div class="theme-toggle" id="themeToggle"></div>
                 <a href="archive.html" class="btn">📚 Archive</a>
@@ -368,9 +409,16 @@
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
 
         const { createClient } = window.supabase;
-        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true
+            }
+        });
 
         let currentWord = null;
+        let currentUser = null;
 
         // Theme toggle
         const themeToggle = document.getElementById('themeToggle');
@@ -385,6 +433,65 @@
             localStorage.setItem('theme', isDark ? 'light' : 'dark');
         });
 
+        // ===== ADDED: Check login status and update header =====
+        async function checkLoginStatus() {
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                
+                if (error) {
+                    console.error('Session error:', error);
+                    return;
+                }
+                
+                const controls = document.getElementById('headerControls');
+                
+                if (session && session.user) {
+                    currentUser = session.user;
+                    console.log('User logged in:', currentUser.email);
+                    
+                    // Update header to show logged-in state
+                    controls.innerHTML = `
+                        <div class="user-badge">
+                            <span>👤</span>
+                            <span>${currentUser.email}</span>
+                        </div>
+                        <a href="admin.html" class="btn">⚙️ Admin</a>
+                        <button class="btn-logout" onclick="handleLogout()">Logout</button>
+                        <div class="theme-toggle ${savedTheme === 'dark' ? 'active' : ''}" id="themeToggle"></div>
+                        <a href="archive.html" class="btn">📚 Archive</a>
+                    `;
+                    
+                    // Re-attach theme toggle event after updating HTML
+                    const newThemeToggle = document.getElementById('themeToggle');
+                    newThemeToggle.addEventListener('click', () => {
+                        const isDark = document.body.classList.contains('dark');
+                        document.body.className = isDark ? 'light' : 'dark';
+                        newThemeToggle.classList.toggle('active');
+                        localStorage.setItem('theme', isDark ? 'light' : 'dark');
+                    });
+                } else {
+                    console.log('No user logged in');
+                    // Keep default login button (already in HTML)
+                }
+            } catch (err) {
+                console.error('Check login error:', err);
+            }
+        }
+
+        // ===== ADDED: Logout function =====
+        window.handleLogout = async function() {
+            try {
+                const { error } = await supabase.auth.signOut();
+                if (error) throw error;
+                
+                console.log('Logged out successfully');
+                window.location.reload();
+            } catch (error) {
+                console.error('Logout error:', error);
+                alert('Error logging out: ' + error.message);
+            }
+        };
+
         // Load today's word
         async function loadTodayWord() {
             try {
@@ -394,14 +501,12 @@
                     .from('words')
                     .select('*')
                     .eq('scheduled_for', today)
-                    .eq('is_published', true)
                     .limit(1);
 
                 if (!words || words.length === 0) {
                     const { data: latest } = await supabase
                         .from('words')
                         .select('*')
-                        .eq('is_published', true)
                         .order('created_at', { ascending: false })
                         .limit(1);
                     
@@ -417,13 +522,16 @@
                 currentWord = words[0];
                 displayWord(currentWord);
 
+                // Update view count
                 await supabase
                     .from('words')
                     .update({ views: (currentWord.views || 0) + 1 })
                     .eq('id', currentWord.id);
 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error loading word:', error);
+                document.getElementById('word').textContent = 'Error';
+                document.getElementById('meaning').textContent = error.message;
             }
         }
 
@@ -458,17 +566,21 @@
                 const { data: words } = await supabase
                     .from('words')
                     .select('*')
-                    .eq('is_published', true)
                     .or(`word.ilike.%${query}%,meaning.ilike.%${query}%`);
 
                 const resultsDiv = document.getElementById('searchResults');
                 
-                await supabase
-                    .from('search_history')
-                    .insert({
-                        search_query: query,
-                        results_count: words?.length || 0
-                    });
+                // Log search to analytics (only if table exists)
+                try {
+                    await supabase
+                        .from('search_history')
+                        .insert({
+                            search_query: query,
+                            results_count: words?.length || 0
+                        });
+                } catch (e) {
+                    console.log('Search logging skipped (table may not exist)');
+                }
 
                 if (!words || words.length === 0) {
                     resultsDiv.innerHTML = '<p>No words found</p>';
@@ -524,7 +636,17 @@
             }
         });
 
-        loadTodayWord();
+        // ===== ADDED: Initialize everything on page load =====
+        async function initializePage() {
+            // Check login status first
+            await checkLoginStatus();
+            
+            // Then load the word
+            await loadTodayWord();
+        }
+
+        // Start initialization
+        initializePage();
     </script>
 </body>
 </html>

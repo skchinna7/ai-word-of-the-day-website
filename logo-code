@@ -1,0 +1,6 @@
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpg" href="images/logo.jpg">
+    <link rel="icon" type="image/jpg" href="images/logo.jpg" sizes="32x32">
+
+    <img src="images/logo.jpg" alt="Word of the Day Logo" class="logo-image">
+       
