@@ -509,3 +509,179 @@
             .logo-text { font-size: 18px; }
             .words-grid { grid-template-columns: 1fr; }
         }
+
+/* Part of Speech Badge */
+.part-of-speech-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 10px 0 20px;
+    color: #fff;
+    letter-spacing: 1px;
+}
+
+/* Synonyms & Antonyms Section */
+.syn-ant-section {
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.syn-ant-title {
+    font-size: 20px;
+    margin-bottom: 15px;
+    color: #fff;
+    font-weight: bold;
+}
+
+.syn-ant-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.syn-ant-tag {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    font-size: 15px;
+    color: #fff;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.syn-ant-tag:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.syn-ant-tag.antonym {
+    background: rgba(255, 100, 100, 0.15);
+    border-color: rgba(255, 100, 100, 0.4);
+}
+
+.syn-ant-tag.antonym:hover {
+    background: rgba(255, 100, 100, 0.25);
+}
+
+/* Suggestion Jumbotron */
+.suggestion-jumbotron {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    padding: 60px 40px;
+    border-radius: 20px;
+    margin: 60px 0;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 1s;
+}
+
+.jumbotron-content {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.jumbotron-content h2 {
+    font-size: 36px;
+    color: #fff;
+    margin-bottom: 15px;
+}
+
+.jumbotron-content p {
+    font-size: 18px;
+    color: #fff;
+    opacity: 0.9;
+    margin-bottom: 30px;
+}
+
+.suggestion-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.suggestion-input,
+.suggestion-textarea {
+    width: 100%;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-family: inherit;
+    background: rgba(255, 255, 255, 0.95);
+    transition: all 0.3s;
+}
+
+.suggestion-input:focus,
+.suggestion-textarea:focus {
+    outline: none;
+    background: #fff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.suggestion-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.suggestion-btn {
+    padding: 15px 40px;
+    background: #fff;
+    color: #11998e;
+    border: none;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.suggestion-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.suggestion-status {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    display: none;
+}
+
+.suggestion-note {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #fff;
+    opacity: 0.8;
+}
+
+.suggestion-note strong {
+    color: #fff;
+    opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .suggestion-jumbotron {
+        padding: 40px 20px;
+    }
+    
+    .jumbotron-content h2 {
+        font-size: 28px;
+    }
+    
+    .jumbotron-content p {
+        font-size: 16px;
+    }
+    
+    .syn-ant-tag {
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+}
+
