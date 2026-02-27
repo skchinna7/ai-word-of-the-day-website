@@ -128,358 +128,453 @@
         <div class="footer">
             <p>&copy; 2026 Word of the Day. All rights reserved.</p>
             <p>Expand your vocabulary, one word at a time.</p>
+            <div style="text-align: center; opacity: 0.6; font-size: 14px; margin-top: 20px;">
+               <span id="timezoneInfo">Loading timezone...</span>
+            </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script type="module">
-        const SUPABASE_URL = "https://qzatavslhtkioivemwlk.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
+   <script type="module">
+    const SUPABASE_URL = "https://qzatavslhtkioivemwlk.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE";
 
-        const { createClient } = window.supabase;
-        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-            auth: {
-                persistSession: true,
-                autoRefreshToken: true,
-                detectSessionInUrl: true
-            }
-        });
-
-        let currentWord = null;
-        let currentUser = null;
-
-        // Theme toggle
-        const themeToggle = document.getElementById('themeToggle');
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.body.className = savedTheme;
-        if (savedTheme === 'dark') themeToggle.classList.add('active');
-
-        themeToggle.addEventListener('click', () => {
-            const isDark = document.body.classList.contains('dark');
-            document.body.className = isDark ? 'light' : 'dark';
-            themeToggle.classList.toggle('active');
-            localStorage.setItem('theme', isDark ? 'light' : 'dark');
-        });
-
-        // Check login status
-        async function checkLoginStatus() {
-            try {
-                const { data: { session }, error } = await supabase.auth.getSession();
-                
-                if (error) {
-                    console.error('Session error:', error);
-                    return;
-                }
-                
-                const controls = document.getElementById('headerControls');
-                
-                if (session && session.user) {
-                    currentUser = session.user;
-                    console.log('User logged in:', currentUser.email);
-                    
-                    controls.innerHTML = `
-                        <div class="user-badge">
-                            <span>👤</span>
-                            <span>${currentUser.email}</span>
-                        </div>
-                        <a href="admin.html" class="btn">⚙️ Admin</a>
-                        <button class="btn-logout" onclick="handleLogout()">Logout</button>
-                        <div class="theme-toggle ${savedTheme === 'dark' ? 'active' : ''}" id="themeToggle"></div>
-                        <a href="archive.html" class="btn">📚 Archive</a>
-                    `;
-                    
-                    const newThemeToggle = document.getElementById('themeToggle');
-                    newThemeToggle.addEventListener('click', () => {
-                        const isDark = document.body.classList.contains('dark');
-                        document.body.className = isDark ? 'light' : 'dark';
-                        newThemeToggle.classList.toggle('active');
-                        localStorage.setItem('theme', isDark ? 'light' : 'dark');
-                    });
-                }
-            } catch (err) {
-                console.error('Check login error:', err);
-            }
+    const { createClient } = window.supabase;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
         }
+    });
 
-        window.handleLogout = async function() {
-            try {
-                const { error } = await supabase.auth.signOut();
-                if (error) throw error;
-                window.location.reload();
-            } catch (error) {
-                console.error('Logout error:', error);
-                alert('Error logging out: ' + error.message);
-            }
-        };
+    let currentWord = null;
+    let currentUser = null;
 
-        // Load today's word
-        async function loadTodayWord() {
-            try {
-                const today = new Date().toISOString().split('T')[0];
-                
-                let { data: words } = await supabase
-                    .from('words')
-                    .select('*')
-                    .eq('scheduled_for', today)
-                    .limit(1);
+    // ===== TIMEZONE UTILITIES =====
+    
+    // Get user's local date (NOT UTC)
+    function getLocalDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 
-                if (!words || words.length === 0) {
-                    const { data: latest } = await supabase
-                        .from('words')
-                        .select('*')
-                        .order('created_at', { ascending: false })
-                        .limit(1);
-                    
-                    words = latest;
-                }
+    // Calculate milliseconds until midnight in user's timezone
+    function getMillisecondsUntilMidnight() {
+        const now = new Date();
+        const midnight = new Date(now);
+        midnight.setHours(24, 0, 0, 0);
+        return midnight - now;
+    }
 
-                if (!words || words.length === 0) {
-                    document.getElementById('word').textContent = 'No Words Yet';
-                    document.getElementById('meaning').textContent = 'Check back soon!';
-                    return;
-                }
+    // Auto-refresh page at midnight
+    function scheduleRefreshAtMidnight() {
+        const msUntilMidnight = getMillisecondsUntilMidnight();
+        const minutesUntil = Math.floor(msUntilMidnight / 1000 / 60);
+        console.log(`⏰ Next auto-refresh in ${minutesUntil} minutes at midnight (local time)`);
+        
+        setTimeout(() => {
+            console.log('🔄 Midnight reached! Refreshing to load new word...');
+            window.location.reload();
+        }, msUntilMidnight);
+    }
 
-                currentWord = words[0];
-                displayWord(currentWord);
-
-                // Track view
-                await supabase
-                    .from('words')
-                    .update({ views: (currentWord.views || 0) + 1 })
-                    .eq('id', currentWord.id);
-                
-                // Track in trends table (if exists)
-                try {
-                    await supabase.rpc('track_word_view', { p_word_id: currentWord.id });
-                } catch (e) {
-                    console.log('Trend tracking skipped');
-                }
-
-            } catch (error) {
-                console.error('Error loading word:', error);
-            }
+    // Display user's timezone
+    function displayTimezone() {
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const offset = new Date().getTimezoneOffset();
+        const offsetHours = Math.abs(Math.floor(offset / 60));
+        const offsetMins = Math.abs(offset % 60);
+        const offsetSign = offset <= 0 ? '+' : '-';
+        
+        const elem = document.getElementById('timezoneInfo');
+        if (elem) {
+            elem.textContent = `🌍 ${timezone} (UTC${offsetSign}${offsetHours}:${String(offsetMins).padStart(2, '0')})`;
         }
+    }
 
-        function displayWord(word) {
-            document.getElementById('word').textContent = word.word;
-            document.getElementById('phonetic').textContent = word.phonetic ? `/${word.phonetic}/` : '';
-            document.getElementById('pronunciation').textContent = word.pronunciation || '';
-            document.getElementById('meaning').textContent = word.meaning;
+    // ===== THEME TOGGLE =====
+    
+    const themeToggle = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.body.className = savedTheme;
+    if (savedTheme === 'dark') themeToggle.classList.add('active');
+
+    themeToggle.addEventListener('click', () => {
+        const isDark = document.body.classList.contains('dark');
+        document.body.className = isDark ? 'light' : 'dark';
+        themeToggle.classList.toggle('active');
+        localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
+
+    // ===== LOGIN STATUS =====
+    
+    async function checkLoginStatus() {
+        try {
+            const { data: { session }, error } = await supabase.auth.getSession();
             
-            document.getElementById('stats').innerHTML = `
-                <div class="stat-item">👁️ ${word.views || 0} views</div>
-                <div class="stat-item">❤️ ${word.favorites_count || 0} favorites</div>
-                <div class="stat-item">💬 ${word.comments_count || 0} comments</div>
-            `;
-        }
-
-        // Load previous words
-        async function loadPreviousWords() {
-            try {
-                const today = new Date().toISOString().split('T')[0];
+            if (error) {
+                console.error('Session error:', error);
+                return;
+            }
+            
+            const controls = document.getElementById('headerControls');
+            
+            if (session && session.user) {
+                currentUser = session.user;
+                console.log('User logged in:', currentUser.email);
                 
-                const { data: words } = await supabase
-                    .from('words')
-                    .select('*')
-                    .lt('scheduled_for', today)
-                    .order('scheduled_for', { ascending: false })
-                    .limit(6);
-                
-                const container = document.getElementById('previousWords');
-                
-                if (!words || words.length === 0) {
-                    container.innerHTML = '<p style="text-align: center; opacity: 0.6;">No previous words yet</p>';
-                    return;
-                }
-                
-                container.innerHTML = words.map(w => `
-                    <div class="word-item">
-                        <div class="word-item-title">${w.word}</div>
-                        <div class="word-item-date">📅 ${new Date(w.scheduled_for).toLocaleDateString()}</div>
-                        <div class="word-item-meaning">${w.meaning.substring(0, 100)}${w.meaning.length > 100 ? '...' : ''}</div>
+                controls.innerHTML = `
+                    <div class="user-badge">
+                        <span>👤</span>
+                        <span>${currentUser.email}</span>
                     </div>
-                `).join('');
+                    <a href="admin.html" class="btn">⚙️ Admin</a>
+                    <button class="btn-logout" id="logoutBtnHeader">Logout</button>
+                    <div class="theme-toggle ${savedTheme === 'dark' ? 'active' : ''}" id="themeToggleNew"></div>
+                    <a href="about.html" class="btn">ℹ️ About</a>
+                    <a href="archive.html" class="btn">📚 Archive</a>
+                `;
                 
-            } catch (error) {
-                console.error('Error loading previous words:', error);
+                // Re-attach theme toggle
+                const newThemeToggle = document.getElementById('themeToggleNew');
+                newThemeToggle.addEventListener('click', () => {
+                    const isDark = document.body.classList.contains('dark');
+                    document.body.className = isDark ? 'light' : 'dark';
+                    newThemeToggle.classList.toggle('active');
+                    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+                });
+                
+                // Attach logout
+                document.getElementById('logoutBtnHeader').addEventListener('click', handleLogout);
             }
+        } catch (err) {
+            console.error('Check login error:', err);
         }
+    }
 
-        // Load trending words
-        async function loadTrendingWords() {
-            try {
-                // Weekly trending (last 7 days)
-                const weekAgo = new Date();
-                weekAgo.setDate(weekAgo.getDate() - 7);
-                
-                const { data: weeklyWords } = await supabase
+    async function handleLogout() {
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) throw error;
+            window.location.reload();
+        } catch (error) {
+            console.error('Logout error:', error);
+            alert('Error logging out: ' + error.message);
+        }
+    }
+
+    // ===== LOAD TODAY'S WORD =====
+    
+    async function loadTodayWord() {
+        try {
+            const today = getLocalDate(); // ✅ USER'S LOCAL DATE
+            
+            console.log('📅 Loading word for:', today);
+            
+            let { data: words } = await supabase
+                .from('words')
+                .select('*')
+                .eq('scheduled_for', today)
+                .limit(1);
+
+            if (!words || words.length === 0) {
+                console.log('No word scheduled for today, getting latest...');
+                const { data: latest } = await supabase
                     .from('words')
                     .select('*')
-                    .gte('scheduled_for', weekAgo.toISOString().split('T')[0])
-                    .order('views', { ascending: false })
-                    .limit(5);
+                    .order('created_at', { ascending: false })
+                    .limit(1);
                 
-                const weeklyContainer = document.getElementById('weeklyTrending');
-                
-                if (weeklyWords && weeklyWords.length > 0) {
-                    weeklyContainer.innerHTML = weeklyWords.map((w, i) => `
-                        <div class="trending-item">
-                            <div class="trending-rank">#${i + 1}</div>
-                            <div class="trending-content">
-                                <div class="trending-word">${w.word}</div>
-                                <div class="trending-stats">👁️ ${w.views || 0} views • 📅 ${new Date(w.scheduled_for).toLocaleDateString()}</div>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    weeklyContainer.innerHTML = '<p style="text-align: center; opacity: 0.6;">No data yet</p>';
-                }
-                
-                // Monthly trending (last 30 days)
-                const monthAgo = new Date();
-                monthAgo.setDate(monthAgo.getDate() - 30);
-                
-                const { data: monthlyWords } = await supabase
-                    .from('words')
-                    .select('*')
-                    .gte('scheduled_for', monthAgo.toISOString().split('T')[0])
-                    .order('views', { ascending: false })
-                    .limit(5);
-                
-                const monthlyContainer = document.getElementById('monthlyTrending');
-                
-                if (monthlyWords && monthlyWords.length > 0) {
-                    monthlyContainer.innerHTML = monthlyWords.map((w, i) => `
-                        <div class="trending-item">
-                            <div class="trending-rank">#${i + 1}</div>
-                            <div class="trending-content">
-                                <div class="trending-word">${w.word}</div>
-                                <div class="trending-stats">👁️ ${w.views || 0} views • 📅 ${new Date(w.scheduled_for).toLocaleDateString()}</div>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    monthlyContainer.innerHTML = '<p style="text-align: center; opacity: 0.6;">No data yet</p>';
-                }
-                
-            } catch (error) {
-                console.error('Error loading trending words:', error);
+                words = latest;
             }
-        }
 
-        // Switch trending tabs
-        window.switchTrending = function(period) {
-            document.querySelectorAll('.trending-tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.trending-list').forEach(list => list.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            
-            if (period === 'week') {
-                document.getElementById('trendingWeek').classList.add('active');
-            } else {
-                document.getElementById('trendingMonth').classList.add('active');
-            }
-        };
-
-        // Search functionality
-        let searchTimeout;
-        document.getElementById('searchBar').addEventListener('input', (e) => {
-            const query = e.target.value.trim();
-            
-            clearTimeout(searchTimeout);
-            
-            if (query.length < 2) {
-                document.getElementById('searchResults').style.display = 'none';
+            if (!words || words.length === 0) {
+                document.getElementById('word').textContent = 'No Words Yet';
+                document.getElementById('meaning').textContent = 'Check back soon!';
                 return;
             }
 
-            searchTimeout = setTimeout(() => searchWords(query), 300);
-        });
+            currentWord = words[0];
+            displayWord(currentWord);
 
-        async function searchWords(query) {
-            try {
-                const { data: words } = await supabase
-                    .from('words')
-                    .select('*')
-                    .or(`word.ilike.%${query}%,meaning.ilike.%${query}%`);
-
-                const resultsDiv = document.getElementById('searchResults');
-                
-                try {
-                    await supabase
-                        .from('search_history')
-                        .insert({
-                            search_query: query,
-                            results_count: words?.length || 0
-                        });
-                } catch (e) {
-                    console.log('Search logging skipped');
-                }
-
-                if (!words || words.length === 0) {
-                    resultsDiv.innerHTML = '<p>No words found</p>';
-                    resultsDiv.style.display = 'block';
-                    return;
-                }
-
-                resultsDiv.innerHTML = `
-                    <h3>Found ${words.length} word${words.length > 1 ? 's' : ''}</h3>
-                    ${words.map(w => `
-                        <div style="padding: 15px; border-bottom: 1px solid #eee;">
-                            <strong style="font-size: 20px;">${w.word}</strong>
-                            ${w.phonetic ? `<span style="color: #666; font-style: italic; margin-left: 10px;">/${w.phonetic}/</span>` : ''}
-                            <p>${w.meaning}</p>
-                        </div>
-                    `).join('')}
-                `;
-                resultsDiv.style.display = 'block';
-
-            } catch (error) {
-                console.error('Search error:', error);
-            }
-        }
-
-        // Subscribe to newsletter
-        document.getElementById('subscribeForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+            // Update view count
+            await supabase
+                .from('words')
+                .update({ views: (currentWord.views || 0) + 1 })
+                .eq('id', currentWord.id);
             
-            const email = document.getElementById('subscribeEmail').value.trim();
-            const statusDiv = document.getElementById('subscribeStatus');
-
+            // Track in trends
             try {
-                const { error } = await supabase
-                    .from('subscribers')
-                    .insert({ email });
-
-                if (error) {
-                    if (error.code === '23505') {
-                        statusDiv.textContent = 'You\'re already subscribed!';
-                        statusDiv.style.color = '#ffeb3b';
-                    } else {
-                        throw error;
-                    }
-                } else {
-                    statusDiv.textContent = '✅ Subscribed! Check your email.';
-                    statusDiv.style.color = '#fff';
-                    document.getElementById('subscribeEmail').value = '';
-                }
-
-            } catch (error) {
-                console.error('Subscribe error:', error);
-                statusDiv.textContent = '❌ Error subscribing';
-                statusDiv.style.color = '#f44336';
+                await supabase.rpc('track_word_view', { p_word_id: currentWord.id });
+            } catch (e) {
+                console.log('Trend tracking skipped');
             }
-        });
 
-        // Initialize everything
-        async function initializePage() {
-            await checkLoginStatus();
-            await loadTodayWord();
-            await loadPreviousWords();
-            await loadTrendingWords();
+        } catch (error) {
+            console.error('Error loading word:', error);
+        }
+    }
+
+    function displayWord(word) {
+        document.getElementById('word').textContent = word.word;
+        document.getElementById('phonetic').textContent = word.phonetic ? `${word.phonetic}` : '';
+        document.getElementById('pronunciation').textContent = word.pronunciation || '';
+        
+        // Part of speech badge
+        const partOfSpeech = document.getElementById('partOfSpeech');
+        if (word.part_of_speech) {
+            partOfSpeech.textContent = word.part_of_speech;
+            partOfSpeech.style.display = 'inline-block';
+        } else {
+            partOfSpeech.style.display = 'none';
+        }
+        
+        document.getElementById('meaning').textContent = word.meaning;
+        
+        // Synonyms
+        const synonymsElem = document.getElementById('synonyms');
+        if (word.synonyms && word.synonyms.length > 0) {
+            synonymsElem.innerHTML = word.synonyms.map(s => 
+                `<span class="syn-ant-tag">${s}</span>`
+            ).join('');
+            document.getElementById('synonymsSection').style.display = 'block';
+        } else {
+            document.getElementById('synonymsSection').style.display = 'none';
+        }
+        
+        // Antonyms
+        const antonymsElem = document.getElementById('antonyms');
+        if (word.antonyms && word.antonyms.length > 0) {
+            antonymsElem.innerHTML = word.antonyms.map(a => 
+                `<span class="syn-ant-tag antonym">${a}</span>`
+            ).join('');
+            document.getElementById('antonymsSection').style.display = 'block';
+        } else {
+            document.getElementById('antonymsSection').style.display = 'none';
+        }
+        
+        document.getElementById('stats').innerHTML = `
+            <div class="stat-item">👁️ ${word.views || 0} views</div>
+            <div class="stat-item">❤️ ${word.favorites_count || 0} favorites</div>
+            <div class="stat-item">💬 ${word.comments_count || 0} comments</div>
+        `;
+    }
+
+    // ===== PREVIOUS WORDS =====
+    
+    async function loadPreviousWords() {
+        try {
+            const today = getLocalDate(); // ✅ USER'S LOCAL DATE
+            
+            const { data: words } = await supabase
+                .from('words')
+                .select('*')
+                .lt('scheduled_for', today)
+                .order('scheduled_for', { ascending: false })
+                .limit(6);
+            
+            const container = document.getElementById('previousWords');
+            
+            if (!words || words.length === 0) {
+                container.innerHTML = '<p style="text-align: center; opacity: 0.6;">No previous words yet</p>';
+                return;
+            }
+            
+            container.innerHTML = words.map(w => `
+                <div class="word-item">
+                    <div class="word-item-title">${w.word}</div>
+                    <div class="word-item-date">📅 ${new Date(w.scheduled_for).toLocaleDateString()}</div>
+                    <div class="word-item-meaning">${w.meaning.substring(0, 100)}${w.meaning.length > 100 ? '...' : ''}</div>
+                </div>
+            `).join('');
+            
+        } catch (error) {
+            console.error('Error loading previous words:', error);
+        }
+    }
+
+    // ===== TRENDING WORDS =====
+    
+    async function loadTrendingWords() {
+        try {
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            
+            const { data: weeklyWords } = await supabase
+                .from('words')
+                .select('*')
+                .gte('scheduled_for', weekAgo.toISOString().split('T')[0])
+                .order('views', { ascending: false })
+                .limit(5);
+            
+            const weeklyContainer = document.getElementById('weeklyTrending');
+            
+            if (weeklyWords && weeklyWords.length > 0) {
+                weeklyContainer.innerHTML = weeklyWords.map((w, i) => `
+                    <div class="trending-item">
+                        <div class="trending-rank">#${i + 1}</div>
+                        <div class="trending-content">
+                            <div class="trending-word">${w.word}</div>
+                            <div class="trending-stats">👁️ ${w.views || 0} views • 📅 ${new Date(w.scheduled_for).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                weeklyContainer.innerHTML = '<p style="text-align: center; opacity: 0.6;">No data yet</p>';
+            }
+            
+            const monthAgo = new Date();
+            monthAgo.setDate(monthAgo.getDate() - 30);
+            
+            const { data: monthlyWords } = await supabase
+                .from('words')
+                .select('*')
+                .gte('scheduled_for', monthAgo.toISOString().split('T')[0])
+                .order('views', { ascending: false })
+                .limit(5);
+            
+            const monthlyContainer = document.getElementById('monthlyTrending');
+            
+            if (monthlyWords && monthlyWords.length > 0) {
+                monthlyContainer.innerHTML = monthlyWords.map((w, i) => `
+                    <div class="trending-item">
+                        <div class="trending-rank">#${i + 1}</div>
+                        <div class="trending-content">
+                            <div class="trending-word">${w.word}</div>
+                            <div class="trending-stats">👁️ ${w.views || 0} views • 📅 ${new Date(w.scheduled_for).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                monthlyContainer.innerHTML = '<p style="text-align: center; opacity: 0.6;">No data yet</p>';
+            }
+            
+        } catch (error) {
+            console.error('Error loading trending words:', error);
+        }
+    }
+
+    window.switchTrending = function(period) {
+        document.querySelectorAll('.trending-tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.trending-list').forEach(list => list.classList.remove('active'));
+        
+        event.target.classList.add('active');
+        
+        if (period === 'week') {
+            document.getElementById('trendingWeek').classList.add('active');
+        } else {
+            document.getElementById('trendingMonth').classList.add('active');
+        }
+    };
+
+    // ===== SEARCH =====
+    
+    let searchTimeout;
+    document.getElementById('searchBar').addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+        
+        clearTimeout(searchTimeout);
+        
+        if (query.length < 2) {
+            document.getElementById('searchResults').style.display = 'none';
+            return;
         }
 
-        initializePage();
-    </script>
+        searchTimeout = setTimeout(() => searchWords(query), 300);
+    });
+
+    async function searchWords(query) {
+        try {
+            const { data: words } = await supabase
+                .from('words')
+                .select('*')
+                .or(`word.ilike.%${query}%,meaning.ilike.%${query}%`);
+
+            const resultsDiv = document.getElementById('searchResults');
+            
+            try {
+                await supabase
+                    .from('search_history')
+                    .insert({
+                        search_query: query,
+                        results_count: words?.length || 0
+                    });
+            } catch (e) {
+                console.log('Search logging skipped');
+            }
+
+            if (!words || words.length === 0) {
+                resultsDiv.innerHTML = '<p>No words found</p>';
+                resultsDiv.style.display = 'block';
+                return;
+            }
+
+            resultsDiv.innerHTML = `
+                <h3>Found ${words.length} word${words.length > 1 ? 's' : ''}</h3>
+                ${words.map(w => `
+                    <div style="padding: 15px; border-bottom: 1px solid #eee;">
+                        <strong style="font-size: 20px;">${w.word}</strong>
+                        ${w.phonetic ? `<span style="color: #666; font-style: italic; margin-left: 10px;">${w.phonetic}</span>` : ''}
+                        <p>${w.meaning}</p>
+                    </div>
+                `).join('')}
+            `;
+            resultsDiv.style.display = 'block';
+
+        } catch (error) {
+            console.error('Search error:', error);
+        }
+    }
+
+    // ===== NEWSLETTER =====
+    
+    document.getElementById('subscribeForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('subscribeEmail').value.trim();
+        const statusDiv = document.getElementById('subscribeStatus');
+
+        try {
+            const { error } = await supabase
+                .from('subscribers')
+                .insert({ email });
+
+            if (error) {
+                if (error.code === '23505') {
+                    statusDiv.textContent = 'You\'re already subscribed!';
+                    statusDiv.style.color = '#ffeb3b';
+                } else {
+                    throw error;
+                }
+            } else {
+                statusDiv.textContent = '✅ Subscribed! Check your email.';
+                statusDiv.style.color = '#fff';
+                document.getElementById('subscribeEmail').value = '';
+            }
+
+        } catch (error) {
+            console.error('Subscribe error:', error);
+            statusDiv.textContent = '❌ Error subscribing';
+            statusDiv.style.color = '#f44336';
+        }
+    });
+
+    // ===== INITIALIZE =====
+    
+    async function initializePage() {
+        await checkLoginStatus();
+        await loadTodayWord();
+        await loadPreviousWords();
+        await loadTrendingWords();
+        displayTimezone();
+        scheduleRefreshAtMidnight(); // ✅ AUTO-REFRESH AT MIDNIGHT
+    }
+
+    initializePage();
+</script>
 </body>
 </html>

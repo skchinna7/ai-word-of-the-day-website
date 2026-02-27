@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <!-- Character encoding -->
     <meta charset="UTF-8">
@@ -42,8 +42,7 @@
     <link rel="stylesheet" href="css/admin.css">
     <link rel="canonical" href="https://www.wotd.in/index/">
     <link rel="alternate" hreflang="es" href="https://www.wotd.in/es/">
-    <link rel="alternate" hreflang="fr" href="https://www.wotd.in/fr/">
-</head>
+    <link rel="alternate" hreflang="fr" href="https://www.wotd.in/fr/"></head>
 <body>
     <div id="notLoggedIn" class="denied" style="display:none;">
         <h1>🔐 Login Required</h1>
@@ -61,8 +60,7 @@
             </div>
             <div>
                 <a href="index.html" style="margin-right: 10px;">← Home</a>
-                <button onclick="logout()" style="padding: 8px 16px;">Logout</button>
-                <img src="images/logo.jpg" alt="Word of the Day Logo" class="logo-image">
+                <button id="logoutBtn" style="padding: 8px 16px;">Logout</button>
             </div>
         </div>
         
@@ -75,9 +73,10 @@
                     <div class="form-group">
                         <label>Word *</label>
                         <input type="text" id="word" required>
-                        <button type="button" class="btn-secondary" onclick="fetchPhonetics()" style="margin-top: 10px; width: 100%;">
-                            🔊 Auto-Get Phonetics
+                        <button type="button" class="btn-secondary btn-full-width" id="autoFetchBtn">
+                            🤖 Auto-Fill All Details
                         </button>
+                        <div id="fetchStatus" style="margin-top: 10px; font-size: 14px;"></div>
                     </div>
                     
                     <div class="form-group">
@@ -89,13 +88,40 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Phonetic (e.g., /səˈrɛndɪpɪti/)</label>
-                        <input type="text" id="phonetic" placeholder="Will auto-fill when you click button above">
+                        <input type="text" id="phonetic" placeholder="Will auto-fill">
                     </div>
                     
                     <div class="form-group">
                         <label>Pronunciation (e.g., ser-en-dip-i-ty)</label>
-                        <input type="text" id="pronunciation" placeholder="Will auto-fill when you click button above">
+                        <input type="text" id="pronunciation" placeholder="Will auto-fill">
                     </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Part of Speech</label>
+                        <select id="partOfSpeech">
+                            <option value="">Auto-detect</option>
+                            <option value="noun">Noun</option>
+                            <option value="verb">Verb</option>
+                            <option value="adjective">Adjective</option>
+                            <option value="adverb">Adverb</option>
+                            <option value="pronoun">Pronoun</option>
+                            <option value="preposition">Preposition</option>
+                            <option value="conjunction">Conjunction</option>
+                            <option value="interjection">Interjection</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Synonyms (comma separated)</label>
+                        <input type="text" id="synonyms" placeholder="e.g., happy, joyful, cheerful">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Antonyms (comma separated)</label>
+                    <input type="text" id="antonyms" placeholder="e.g., sad, unhappy, miserable">
                 </div>
                 
                 <div class="form-group">
@@ -105,7 +131,7 @@
                 
                 <div style="display: flex; gap: 10px;">
                     <button type="submit" id="submitBtn">Add Word</button>
-                    <button type="button" class="btn-secondary" onclick="cancelEdit()" id="cancelBtn" style="display: none;">Cancel</button>
+                    <button type="button" class="btn-secondary" id="cancelBtn" style="display: none;">Cancel</button>
                 </div>
             </form>
             <div id="msg" style="display:none"></div>
@@ -147,31 +173,24 @@
             return true;
         }
         
-        async function logout() {
+        document.getElementById('logoutBtn').addEventListener('click', async function() {
             await sb.auth.signOut();
             window.location.href = 'index.html';
-        }
+        });
         
-        // Fetch phonetics from Free Dictionary API
-        async function fetchPhonetics() {
+        // Auto-fetch all word details from dictionary API
+        document.getElementById('autoFetchBtn').addEventListener('click', async function() {
             const wordInput = document.getElementById('word').value.trim();
-            const phoneticInput = document.getElementById('phonetic');
-            const pronunciationInput = document.getElementById('pronunciation');
-            const msg = document.getElementById('msg');
+            const fetchStatus = document.getElementById('fetchStatus');
             
             if (!wordInput) {
-                msg.textContent = '⚠️ Please enter a word first';
-                msg.className = 'message info';
-                msg.style.display = 'block';
-                setTimeout(() => msg.style.display = 'none', 3000);
+                fetchStatus.innerHTML = '<span style="color: #f44336;">⚠️ Please enter a word first</span>';
                 return;
             }
             
+            fetchStatus.innerHTML = '<span style="color: #2196F3;">🔄 Fetching data from dictionary...</span>';
+            
             try {
-                msg.textContent = '🔄 Fetching phonetics...';
-                msg.className = 'message info';
-                msg.style.display = 'block';
-                
                 const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${wordInput}`);
                 
                 if (!response.ok) {
@@ -185,35 +204,73 @@
                     
                     // Get phonetic
                     if (entry.phonetic) {
-                        phoneticInput.value = entry.phonetic;
+                        document.getElementById('phonetic').value = entry.phonetic;
                     } else if (entry.phonetics && entry.phonetics[0] && entry.phonetics[0].text) {
-                        phoneticInput.value = entry.phonetics[0].text;
+                        document.getElementById('phonetic').value = entry.phonetics[0].text;
                     }
                     
-                    // Create pronunciation from phonetic
-                    if (phoneticInput.value) {
-                        const simplified = phoneticInput.value
+                    // Create pronunciation
+                    const phoneticVal = document.getElementById('phonetic').value;
+                    if (phoneticVal) {
+                        const simplified = phoneticVal
                             .replace(/[\/\[\]]/g, '')
-                            .replace(/ˈ/g, '')
-                            .replace(/ˌ/g, '');
-                        pronunciationInput.value = simplified;
+                            .replace(/ˈ/g, '-')
+                            .replace(/ˌ/g, '')
+                            .replace(/ː/g, '');
+                        document.getElementById('pronunciation').value = simplified;
                     }
                     
-                    msg.textContent = '✅ Phonetics loaded!';
-                    msg.className = 'message success';
-                    setTimeout(() => msg.style.display = 'none', 2000);
+                    // Get meaning, part of speech, synonyms, antonyms
+                    if (entry.meanings && entry.meanings[0]) {
+                        const meaning = entry.meanings[0];
+                        
+                        // Part of speech
+                        if (meaning.partOfSpeech) {
+                            document.getElementById('partOfSpeech').value = meaning.partOfSpeech;
+                        }
+                        
+                        // Meaning
+                        if (meaning.definitions && meaning.definitions[0]) {
+                            document.getElementById('meaning').value = meaning.definitions[0].definition;
+                        }
+                        
+                        // Synonyms
+                        const synonyms = [];
+                        if (meaning.synonyms && meaning.synonyms.length > 0) {
+                            synonyms.push(...meaning.synonyms.slice(0, 5));
+                        }
+                        if (meaning.definitions && meaning.definitions[0] && meaning.definitions[0].synonyms) {
+                            synonyms.push(...meaning.definitions[0].synonyms.slice(0, 5));
+                        }
+                        if (synonyms.length > 0) {
+                            document.getElementById('synonyms').value = [...new Set(synonyms)].join(', ');
+                        }
+                        
+                        // Antonyms
+                        const antonyms = [];
+                        if (meaning.antonyms && meaning.antonyms.length > 0) {
+                            antonyms.push(...meaning.antonyms.slice(0, 5));
+                        }
+                        if (meaning.definitions && meaning.definitions[0] && meaning.definitions[0].antonyms) {
+                            antonyms.push(...meaning.definitions[0].antonyms.slice(0, 5));
+                        }
+                        if (antonyms.length > 0) {
+                            document.getElementById('antonyms').value = [...new Set(antonyms)].join(', ');
+                        }
+                    }
+                    
+                    fetchStatus.innerHTML = '<span style="color: #4CAF50;">✅ All details loaded successfully!</span>';
+                    setTimeout(() => fetchStatus.innerHTML = '', 3000);
                 } else {
-                    throw new Error('No phonetic data available');
+                    throw new Error('No data available');
                 }
             } catch (error) {
-                console.error('Phonetics error:', error);
-                msg.textContent = '⚠️ Could not fetch phonetics. Please enter manually.';
-                msg.className = 'message info';
-                setTimeout(() => msg.style.display = 'none', 3000);
+                console.error('Fetch error:', error);
+                fetchStatus.innerHTML = '<span style="color: #ff9800;">⚠️ Could not fetch all details. Please enter manually.</span>';
             }
-        }
+        });
         
-        document.getElementById('wordForm').onsubmit = async (e) => {
+        document.getElementById('wordForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const w = document.getElementById('word').value.trim();
@@ -221,6 +278,9 @@
             const s = document.getElementById('scheduled').value;
             const phonetic = document.getElementById('phonetic').value.trim();
             const pronunciation = document.getElementById('pronunciation').value.trim();
+            const partOfSpeech = document.getElementById('partOfSpeech').value;
+            const synonymsStr = document.getElementById('synonyms').value.trim();
+            const antonymsStr = document.getElementById('antonyms').value.trim();
             const editId = document.getElementById('editId').value;
             const msg = document.getElementById('msg');
             const submitBtn = document.getElementById('submitBtn');
@@ -234,16 +294,17 @@
                     meaning: m, 
                     scheduled_for: s,
                     phonetic: phonetic || null,
-                    pronunciation: pronunciation || null
+                    pronunciation: pronunciation || null,
+                    part_of_speech: partOfSpeech || null,
+                    synonyms: synonymsStr ? synonymsStr.split(',').map(x => x.trim()) : null,
+                    antonyms: antonymsStr ? antonymsStr.split(',').map(x => x.trim()) : null
                 };
                 
                 let error;
                 
                 if (isEditing && editId) {
-                    // Update existing word
                     ({ error } = await sb.from('words').update(wordData).eq('id', editId));
                 } else {
-                    // Insert new word
                     ({ error } = await sb.from('words').insert(wordData));
                 }
                 
@@ -266,7 +327,7 @@
             setTimeout(() => msg.style.display = 'none', 4000);
             submitBtn.disabled = false;
             submitBtn.textContent = isEditing ? 'Update Word' : 'Add Word';
-        };
+        });
         
         window.editWord = function(id) {
             sb.from('words').select('*').eq('id', id).single()
@@ -281,16 +342,20 @@
                     document.getElementById('scheduled').value = data.scheduled_for;
                     document.getElementById('phonetic').value = data.phonetic || '';
                     document.getElementById('pronunciation').value = data.pronunciation || '';
+                    document.getElementById('partOfSpeech').value = data.part_of_speech || '';
+                    document.getElementById('synonyms').value = data.synonyms ? data.synonyms.join(', ') : '';
+                    document.getElementById('antonyms').value = data.antonyms ? data.antonyms.join(', ') : '';
                     document.getElementById('submitBtn').textContent = 'Update Word';
                     document.getElementById('cancelBtn').style.display = 'inline-block';
                     
-                    // Scroll to form
                     document.getElementById('wordForm').scrollIntoView({ behavior: 'smooth' });
                 })
                 .catch(error => {
                     alert('Error loading word: ' + error.message);
                 });
         };
+        
+        document.getElementById('cancelBtn').addEventListener('click', cancelEdit);
         
         function cancelEdit() {
             isEditing = false;
@@ -320,14 +385,20 @@
                 
                 const today = new Date().toISOString().split('T')[0];
                 
-                list.innerHTML = '<table><tr><th>Date</th><th>Word</th><th>Phonetic</th><th>Meaning</th><th>Actions</th></tr>' +
+                list.innerHTML = '<table><tr><th>Date</th><th>Word</th><th>Part of Speech</th><th>Meaning</th><th>Actions</th></tr>' +
                     data.map(w => {
                         const isToday = w.scheduled_for === today;
                         return `<tr class="${isToday ? 'today-row' : ''}">
                             <td>${w.scheduled_for || 'N/A'} ${isToday ? '<b>(TODAY)</b>' : ''}</td>
-                            <td><b>${w.word}</b>${w.pronunciation ? `<br><span style="font-size: 12px; color: #666;">${w.pronunciation}</span>` : ''}</td>
-                            <td style="font-style: italic; color: #666;">${w.phonetic || '-'}</td>
-                            <td>${w.meaning.substring(0, 80)}${w.meaning.length > 80 ? '...' : ''}</td>
+                            <td>
+                                <b>${w.word}</b>
+                                ${w.pronunciation ? `<br><span style="font-size: 12px; color: #666;">${w.pronunciation}</span>` : ''}
+                            </td>
+                            <td style="font-style: italic; color: #666;">
+                                ${w.part_of_speech || '-'}
+                                ${w.phonetic ? `<br><span style="font-size: 11px;">${w.phonetic}</span>` : ''}
+                            </td>
+                            <td>${w.meaning.substring(0, 60)}${w.meaning.length > 60 ? '...' : ''}</td>
                             <td>
                                 <button class="btn-edit" onclick="editWord('${w.id}')">Edit</button>
                                 <button class="btn-delete" onclick="deleteWord('${w.id}')">Delete</button>
@@ -354,10 +425,8 @@
             }
         };
         
-        // Set today as default
         document.getElementById('scheduled').valueAsDate = new Date();
         
-        // Initialize
         checkAuth().then(ok => { if(ok) loadWords(); });
     </script>
 </body>
