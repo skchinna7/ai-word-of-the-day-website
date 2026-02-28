@@ -685,3 +685,46 @@
     }
 }
 
+/* Word Count Badge */
+.word-count-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px 30px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+    animation: fadeIn 1s;
+}
+
+.word-count-number {
+    font-size: 48px;
+    font-weight: bold;
+    color: #fff;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.word-count-label {
+    font-size: 14px;
+    color: #fff;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+body.light .word-count-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+@media (max-width: 768px) {
+    .word-count-badge {
+        padding: 15px 20px;
+    }
+    
+    .word-count-number {
+        font-size: 36px;
+    }
+    
+    .word-count-label {
+        font-size: 12px;
+    }
+}

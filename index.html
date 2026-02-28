@@ -54,6 +54,11 @@
                     <div class="logo-text">Word of the Day</div>
                     <span class="logo-tagline">Expand your vocabulary daily</span>
                 </div>
+                <!-- Word Count Badge -->
+                <div class="word-count-badge">
+                    <div class="word-count-number" id="wordCountIndex">0</div>
+                    <div class="word-count-label">Words Available</div>
+                </div>    
             </a>
             <div class="controls" id="headerControls">
                 <a href="login.html" class="btn">🔐 Login</a>
@@ -607,6 +612,122 @@ Time: ${new Date().toLocaleString()}
         }
 
         initializePage();
+    </script>
+    <!-- Add EmailJS SDK before your script -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="module">
+        // Initialize EmailJS (PUT YOUR KEYS HERE!)
+        (function() {
+            emailjs.init("YOUR_PUBLIC_KEY"); // Replace with your actual public key
+        })();
+        
+        async function initializePage() {
+            await checkLoginStatus();
+            await loadWordCount();        // ← ADD THIS LINE
+            await loadTodayWord();
+            await loadPreviousWords();
+            await loadTrendingWords();
+            displayTimezone();
+            scheduleRefreshAtMidnight();
+        }
+        
+        // ===== SUGGESTION FORM WITH EMAILJS =====
+        
+        document.getElementById('suggestionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('suggestionName').value.trim() || 'Anonymous';
+            const email = document.getElementById('suggestionEmail').value.trim() || 'no-reply@example.com';
+            const message = document.getElementById('suggestionMessage').value.trim();
+            const statusDiv = document.getElementById('suggestionStatus');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = '📤 Sending...';
+            statusDiv.textContent = '📤 Sending your message...';
+            statusDiv.style.display = 'block';
+            statusDiv.style.color = '#2196F3';
+            
+            try {
+                // Send email using EmailJS
+                const result = await emailjs.send(
+                    'YOUR_SERVICE_ID',  // Replace with your Service ID
+                    'YOUR_TEMPLATE_ID', // Replace with your Template ID
+                    {
+                        from_name: name,
+                        from_email: email,
+                        message: message,
+                        to_email: 'site-reply@wotd.in'
+                    }
+                );
+                
+                console.log('Email sent successfully:', result);
+                
+                statusDiv.textContent = '✅ Thank you! Your message has been sent to site-reply@wotd.in';
+                statusDiv.style.color = '#4CAF50';
+                document.getElementById('suggestionForm').reset();
+                
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Send Suggestion 📧';
+                }, 5000);
+                
+            } catch (error) {
+                console.error('Email error:', error);
+                statusDiv.innerHTML = `
+                    ❌ Could not send automatically. Please email us directly at:<br>
+                    <strong style="color: #fff;">site-reply@wotd.in</strong><br>
+                    <small>Error: ${error.text || error.message}</small>
+                `;
+                statusDiv.style.color = '#f44336';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Suggestion 📧';
+            }
+        });
+        
+        // ===== LOAD WORD COUNT =====
+
+        async function loadWordCount() {
+            try {
+                const { count, error } = await supabase
+                    .from('words')
+                    .select('*', { count: 'exact', head: true });
+                
+                if (error) throw error;
+                
+                const countElem = document.getElementById('wordCountIndex');
+                if (countElem) {
+                    // Animate the count
+                    animateCount(countElem, 0, count, 1000);
+                }
+            } catch (error) {
+                console.error('Error loading word count:', error);
+                const countElem = document.getElementById('wordCountIndex');
+                if (countElem) {
+                    countElem.textContent = '?';
+                }
+            }
+        }
+
+        // Animate counter from 0 to target
+        function animateCount(element, start, end, duration) {
+            const startTime = Date.now();
+            const range = end - start;
+            
+            function update() {
+                const now = Date.now();
+                const progress = Math.min((now - startTime) / duration, 1);
+                const current = Math.floor(progress * range + start);
+                element.textContent = current;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            update();
+        }        // ... rest of your code ...
     </script>
 </body>
 </html>

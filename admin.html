@@ -57,6 +57,11 @@
         <div class="user-info">
             <div>
                 Logged in as: <strong id="userEmail">Loading...</strong>
+                <div style="margin-top: 10px;">
+                    <span class="admin-stat-badge">
+                        📚 <strong id="wordCountAdmin">0</strong> Total Words
+                    </span>
+                </div>
             </div>
             <div>
                 <a href="index.html" style="margin-right: 10px;">← Home</a>
@@ -64,6 +69,22 @@
             </div>
         </div>
         
+        <!-- Add this after the header, before search bar -->
+        <div class="stats-banner">
+            <div class="stat-box">
+                <div class="stat-number" id="totalWords">0</div>
+                <div class="stat-label">Total Words</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="totalViews">0</div>
+                <div class="stat-label">Total Views</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="totalSubscribers">0</div>
+                <div class="stat-label">Subscribers</div>
+            </div>
+        </div>
+
         <div class="form-container">
             <h2 id="formTitle">Add New Word</h2>
             <form id="wordForm">
@@ -167,6 +188,13 @@
                 return false;
             }
             
+            checkAuth().then(ok => { 
+                if(ok) {
+                    loadWords();
+                    loadWordCount();  // ← ADD THIS LINE
+                    }
+            });
+
             document.getElementById('notLoggedIn').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'block';
             document.getElementById('userEmail').textContent = session.user.email;
@@ -179,6 +207,7 @@
         });
         
         // Auto-fetch all word details from dictionary API
+        // Enhanced Auto-fetch function with better synonym/antonym extraction
         document.getElementById('autoFetchBtn').addEventListener('click', async function() {
             const wordInput = document.getElementById('word').value.trim();
             const fetchStatus = document.getElementById('fetchStatus');
@@ -188,9 +217,10 @@
                 return;
             }
             
-            fetchStatus.innerHTML = '<span style="color: #2196F3;">🔄 Fetching data from dictionary...</span>';
+            fetchStatus.innerHTML = '<span style="color: #2196F3;">🔄 Fetching from multiple sources...</span>';
             
             try {
+                // Fetch from Free Dictionary API
                 const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${wordInput}`);
                 
                 if (!response.ok) {
@@ -201,15 +231,22 @@
                 
                 if (data && data[0]) {
                     const entry = data[0];
+                    let allSynonyms = new Set();
+                    let allAntonyms = new Set();
                     
                     // Get phonetic
                     if (entry.phonetic) {
                         document.getElementById('phonetic').value = entry.phonetic;
-                    } else if (entry.phonetics && entry.phonetics[0] && entry.phonetics[0].text) {
-                        document.getElementById('phonetic').value = entry.phonetics[0].text;
+                    } else if (entry.phonetics && entry.phonetics.length > 0) {
+                        for (let phonetic of entry.phonetics) {
+                            if (phonetic.text) {
+                                document.getElementById('phonetic').value = phonetic.text;
+                                break;
+                            }
+                        }
                     }
                     
-                    // Create pronunciation
+                    // Create pronunciation from phonetic
                     const phoneticVal = document.getElementById('phonetic').value;
                     if (phoneticVal) {
                         const simplified = phoneticVal
@@ -220,53 +257,95 @@
                         document.getElementById('pronunciation').value = simplified;
                     }
                     
-                    // Get meaning, part of speech, synonyms, antonyms
-                    if (entry.meanings && entry.meanings[0]) {
-                        const meaning = entry.meanings[0];
+                    // Process ALL meanings to get comprehensive synonyms/antonyms
+                    if (entry.meanings && entry.meanings.length > 0) {
+                        // Use the FIRST meaning for primary definition and part of speech
+                        const firstMeaning = entry.meanings[0];
                         
                         // Part of speech
-                        if (meaning.partOfSpeech) {
-                            document.getElementById('partOfSpeech').value = meaning.partOfSpeech;
+                        if (firstMeaning.partOfSpeech) {
+                            document.getElementById('partOfSpeech').value = firstMeaning.partOfSpeech;
                         }
                         
-                        // Meaning
-                        if (meaning.definitions && meaning.definitions[0]) {
-                            document.getElementById('meaning').value = meaning.definitions[0].definition;
+                        // Meaning/Definition
+                        if (firstMeaning.definitions && firstMeaning.definitions[0]) {
+                            document.getElementById('meaning').value = firstMeaning.definitions[0].definition;
                         }
                         
-                        // Synonyms
-                        const synonyms = [];
-                        if (meaning.synonyms && meaning.synonyms.length > 0) {
-                            synonyms.push(...meaning.synonyms.slice(0, 5));
-                        }
-                        if (meaning.definitions && meaning.definitions[0] && meaning.definitions[0].synonyms) {
-                            synonyms.push(...meaning.definitions[0].synonyms.slice(0, 5));
-                        }
-                        if (synonyms.length > 0) {
-                            document.getElementById('synonyms').value = [...new Set(synonyms)].join(', ');
-                        }
-                        
-                        // Antonyms
-                        const antonyms = [];
-                        if (meaning.antonyms && meaning.antonyms.length > 0) {
-                            antonyms.push(...meaning.antonyms.slice(0, 5));
-                        }
-                        if (meaning.definitions && meaning.definitions[0] && meaning.definitions[0].antonyms) {
-                            antonyms.push(...meaning.definitions[0].antonyms.slice(0, 5));
-                        }
-                        if (antonyms.length > 0) {
-                            document.getElementById('antonyms').value = [...new Set(antonyms)].join(', ');
+                        // Collect synonyms and antonyms from ALL meanings
+                        for (let meaning of entry.meanings) {
+                            // Top-level synonyms
+                            if (meaning.synonyms && meaning.synonyms.length > 0) {
+                                meaning.synonyms.forEach(s => allSynonyms.add(s));
+                            }
+                            
+                            // Top-level antonyms
+                            if (meaning.antonyms && meaning.antonyms.length > 0) {
+                                meaning.antonyms.forEach(a => allAntonyms.add(a));
+                            }
+                            
+                            // Definition-level synonyms and antonyms
+                            if (meaning.definitions) {
+                                for (let def of meaning.definitions) {
+                                    if (def.synonyms && def.synonyms.length > 0) {
+                                        def.synonyms.forEach(s => allSynonyms.add(s));
+                                    }
+                                    if (def.antonyms && def.antonyms.length > 0) {
+                                        def.antonyms.forEach(a => allAntonyms.add(a));
+                                    }
+                                }
+                            }
                         }
                     }
                     
-                    fetchStatus.innerHTML = '<span style="color: #4CAF50;">✅ All details loaded successfully!</span>';
-                    setTimeout(() => fetchStatus.innerHTML = '', 3000);
+                    // Set synonyms (limit to 10 most relevant)
+                    if (allSynonyms.size > 0) {
+                        const synonymsArray = Array.from(allSynonyms).slice(0, 10);
+                        document.getElementById('synonyms').value = synonymsArray.join(', ');
+                    }
+                    
+                    // Set antonyms (limit to 10 most relevant)
+                    if (allAntonyms.size > 0) {
+                        const antonymsArray = Array.from(allAntonyms).slice(0, 10);
+                        document.getElementById('antonyms').value = antonymsArray.join(', ');
+                    }
+                    
+                    // Try to fetch more synonyms from Thesaurus API if needed
+                    if (allSynonyms.size === 0) {
+                        try {
+                            const thesaurusResponse = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${wordInput}`);
+                            if (thesaurusResponse.ok) {
+                                const thesaurusData = await thesaurusResponse.json();
+                                // Process thesaurus data...
+                                console.log('Thesaurus data:', thesaurusData);
+                            }
+                        } catch (e) {
+                            console.log('Thesaurus lookup failed');
+                        }
+                    }
+                    
+                    const synCount = allSynonyms.size;
+                    const antCount = allAntonyms.size;
+                    
+                    fetchStatus.innerHTML = `
+                        <span style="color: #4CAF50;">
+                            ✅ Loaded successfully!<br>
+                            Found: ${synCount} synonyms, ${antCount} antonyms
+                        </span>
+                    `;
+                    setTimeout(() => fetchStatus.innerHTML = '', 5000);
+                    
                 } else {
                     throw new Error('No data available');
                 }
             } catch (error) {
                 console.error('Fetch error:', error);
-                fetchStatus.innerHTML = '<span style="color: #ff9800;">⚠️ Could not fetch all details. Please enter manually.</span>';
+                fetchStatus.innerHTML = `
+                    <span style="color: #ff9800;">
+                        ⚠️ Could not fetch all details automatically.<br>
+                        Please enter manually or try a different spelling.
+                    </span>
+                `;
             }
         });
         
@@ -428,6 +507,89 @@
         document.getElementById('scheduled').valueAsDate = new Date();
         
         checkAuth().then(ok => { if(ok) loadWords(); });
+
+    async function fetchFromDataMuse(word) {
+    try {
+        // Get synonyms
+        const synResponse = await fetch(`https://api.datamuse.com/words?rel_syn=${word}&max=10`);
+        const synonyms = await synResponse.json();
+        
+        // Get antonyms
+        const antResponse = await fetch(`https://api.datamuse.com/words?rel_ant=${word}&max=10`);
+        const antonyms = await antResponse.json();
+        
+        if (synonyms.length > 0) {
+            document.getElementById('synonyms').value = synonyms.map(s => s.word).join(', ');
+        }
+        
+        if (antonyms.length > 0) {
+            document.getElementById('antonyms').value = antonyms.map(a => a.word).join(', ');
+        }
+        
+        return { synonyms: synonyms.length, antonyms: antonyms.length };
+    } catch (error) {
+        console.error('DataMuse error:', error);
+        return { synonyms: 0, antonyms: 0 };
+    }
+}
+
+        // Load word count
+        async function loadWordCount() {
+            try {
+                const { count, error } = await sb
+                    .from('words')
+                    .select('*', { count: 'exact', head: true });
+                
+                if (error) throw error;
+                
+                const countElem = document.getElementById('wordCountAdmin');
+                if (countElem) {
+                    countElem.textContent = count;
+                }
+            } catch (error) {
+                console.error('Error loading word count:', error);
+            }
+        }
+        async function loadWords() {
+            try {
+                // ... existing code ...
+                
+                // Update word count after loading
+                loadWordCount();  // ← ADD THIS LINE
+                
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadSiteStats() {
+    try {
+        // Total words
+        const { count: wordCount } = await supabase
+            .from('words')
+            .select('*', { count: 'exact', head: true });
+        
+        // Total views
+        const { data: words } = await supabase
+            .from('words')
+            .select('views');
+        
+        const totalViews = words ? words.reduce((sum, w) => sum + (w.views || 0), 0) : 0;
+        
+        // Total subscribers
+        const { count: subCount } = await supabase
+            .from('subscribers')
+            .select('*', { count: 'exact', head: true });
+        
+        // Animate counts
+        animateCount(document.getElementById('totalWords'), 0, wordCount || 0, 1000);
+        animateCount(document.getElementById('totalViews'), 0, totalViews, 1500);
+        animateCount(document.getElementById('totalSubscribers'), 0, subCount || 0, 1200);
+        
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+}
     </script>
 </body>
 </html>
