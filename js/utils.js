@@ -1,5 +1,7 @@
-// Utility functions - no dependencies
-const AppUtils = {
+// Utility functions - loaded SECOND
+console.log('📦 Loading utils.js...');
+
+window.AppUtils = {
     getLocalDate() {
         const now = new Date();
         const year = now.getFullYear();
@@ -60,9 +62,6 @@ const AppUtils = {
     }
 };
 
-// Make globally accessible
-window.AppUtils = AppUtils;
-
 // Global function for HTML onclick
 window.switchTrending = function(period) {
     document.querySelectorAll('.trending-tab').forEach(tab => tab.classList.remove('active'));
@@ -70,3 +69,5 @@ window.switchTrending = function(period) {
     event.target.classList.add('active');
     document.getElementById(period === 'week' ? 'trendingWeek' : 'trendingMonth').classList.add('active');
 };
+
+console.log('✅ utils.js loaded');

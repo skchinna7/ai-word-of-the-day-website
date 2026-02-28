@@ -1,6 +1,16 @@
-// Main application logic
+// Main application - loaded THIRD
+console.log('📦 Loading app.js...');
+
 const App = {
-    // Initialize theme
+    // Get supabase client safely
+    getSupabase() {
+        if (!window.supabaseClient) {
+            console.error('❌ Supabase not initialized yet!');
+            return null;
+        }
+        return window.supabaseClient;
+    },
+
     initTheme() {
         const themeToggle = document.getElementById('themeToggle');
         if (!themeToggle) return;
@@ -17,8 +27,10 @@ const App = {
         });
     },
 
-    // Check login status
     async checkLoginStatus() {
+        const supabase = this.getSupabase();
+        if (!supabase) return;
+        
         try {
             const { data: { session } } = await supabase.auth.getSession();
             const controls = document.getElementById('headerControls');
@@ -60,8 +72,10 @@ const App = {
         }
     },
 
-    // Load site statistics
     async loadSiteStats() {
+        const supabase = this.getSupabase();
+        if (!supabase) return;
+        
         console.log('📊 Loading statistics...');
         
         try {
@@ -71,7 +85,7 @@ const App = {
             
             const elem1 = document.getElementById('totalWords');
             if (elem1 && wordCount !== null) {
-                setTimeout(() => AppUtils.animateCount(elem1, 0, wordCount, 1000), 100);
+                setTimeout(() => window.AppUtils.animateCount(elem1, 0, wordCount, 1000), 100);
             }
             
             const { data: wordsData } = await supabase.from('words').select('views');
@@ -79,7 +93,7 @@ const App = {
                 const totalViews = wordsData.reduce((sum, w) => sum + (w.views || 0), 0);
                 const elem2 = document.getElementById('totalViews');
                 if (elem2) {
-                    setTimeout(() => AppUtils.animateCount(elem2, 0, totalViews, 1500), 300);
+                    setTimeout(() => window.AppUtils.animateCount(elem2, 0, totalViews, 1500), 300);
                 }
             }
             
@@ -89,7 +103,7 @@ const App = {
             
             const elem3 = document.getElementById('totalSubscribers');
             if (elem3 && subCount !== null) {
-                setTimeout(() => AppUtils.animateCount(elem3, 0, subCount, 1200), 500);
+                setTimeout(() => window.AppUtils.animateCount(elem3, 0, subCount, 1200), 500);
             }
             
         } catch (error) {
@@ -97,10 +111,12 @@ const App = {
         }
     },
 
-    // Load today's word
     async loadTodayWord() {
+        const supabase = this.getSupabase();
+        if (!supabase) return;
+        
         try {
-            const today = AppUtils.getLocalDate();
+            const today = window.AppUtils.getLocalDate();
             console.log('📅 Loading word for:', today);
             
             let { data: words } = await supabase
@@ -184,8 +200,11 @@ const App = {
     },
 
     async loadPreviousWords() {
+        const supabase = this.getSupabase();
+        if (!supabase) return;
+        
         try {
-            const today = AppUtils.getLocalDate();
+            const today = window.AppUtils.getLocalDate();
             const { data: words } = await supabase
                 .from('words')
                 .select('*')
@@ -214,6 +233,9 @@ const App = {
     },
 
     async loadTrendingWords() {
+        const supabase = this.getSupabase();
+        if (!supabase) return;
+        
         try {
             const weekAgo = new Date();
             weekAgo.setDate(weekAgo.getDate() - 7);
@@ -289,6 +311,9 @@ const App = {
     },
 
     async searchWords(query) {
+        const supabase = this.getSupabase();
+        if (!supabase) return;
+        
         try {
             const { data: words } = await supabase
                 .from('words')
@@ -321,6 +346,9 @@ const App = {
     },
 
     initForms() {
+        const supabase = this.getSupabase();
+        if (!supabase) return;
+        
         const subscribeForm = document.getElementById('subscribeForm');
         if (subscribeForm) {
             subscribeForm.addEventListener('submit', async (e) => {
@@ -376,16 +404,19 @@ const App = {
         await this.loadPreviousWords();
         await this.loadTrendingWords();
         
-        AppUtils.displayTimezone();
-        AppUtils.scheduleRefreshAtMidnight();
+        window.AppUtils.displayTimezone();
+        window.AppUtils.scheduleRefreshAtMidnight();
         
         console.log('✅ Ready!');
     }
 };
 
-// Auto-initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => App.initialize());
-} else {
-    App.initialize();
-}
+// Wait for everything to be ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Wait a bit for Supabase to initialize
+    setTimeout(() => {
+        App.initialize();
+    }, 100);
+});
+
+console.log('✅ app.js loaded');
