@@ -46,3 +46,209 @@
     <link rel="canonical" href="https://www.wotd.in/index/">
     <link rel="alternate" hreflang="es" href="https://www.wotd.in/es/">
     <link rel="alternate" hreflang="fr" href="https://www.wotd.in/fr/">
+
+<!DOCTYPE html>
+<html>
+<head>
+   <!-- Character encoding -->
+    <meta charset="UTF-8">
+    <!-- Viewport for responsive design -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index</title><!-- Page title (also in <title>) -->
+    <meta name="title" content="Word of the Day - Learn New Words Daily">
+    <!-- Page description for search engines -->
+    <meta name="description" content="Discover a new word every day with definitions, examples, and pronunciation guides.">
+    <!-- Keywords (less important now) -->
+    <meta name="keywords" content="word of the day, vocabulary, learning, english words, dictionary">
+    <!-- Author -->
+    <meta name="author" content="Your Name or Organization">
+    <!-- Robots directive -->
+    <meta name="robots" content="index, follow">
+    <!-- Open Graph protocol -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.wotd.in/">
+    <meta property="og:title" content="Word of the Day - Learn New Words Daily">
+    <meta property="og:description" content="Discover a new word every day with definitions, examples, and pronunciation guides.">
+    <meta property="og:image" content="https://www.wotd.in/images/logo.jpg">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://yourwebsite.com/">
+    <meta name="twitter:title" content="Word of the Day - Learn New Words Daily">
+    <meta name="twitter:description" content="Discover a new word every day with definitions, examples, and pronunciation guides.">
+    <meta name="twitter:image" content="https://yourwebsite.com/images/logo.jpg">
+
+        <!-- Prevent XSS attacks -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Cache control -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/jpg" href="images/logo.jpg">
+    <link rel="icon" type="image/jpg" href="images/logo.jpg" sizes="32x32">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="canonical" href="https://www.wotd.in/index/">
+    <link rel="alternate" hreflang="es" href="https://www.wotd.in/es/">
+    <link rel="alternate" hreflang="fr" href="https://www.wotd.in/fr/">
+</head>
+<body class="dark">
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <a href="index.html" class="logo-container">
+                <img src="images/logo.jpg" alt="Word of the Day Logo" class="logo-image">
+                <div>
+                    <div class="logo-text">Word of the Day</div>
+                    <span class="logo-tagline">Expand your vocabulary daily</span>
+                </div>
+                <!-- Word Count Badge -->
+                <div class="word-count-badge">
+                    <div class="word-count-number" id="wordCountIndex"></div>
+                    <div class="word-count-label">Words Available</div>
+                </div>    
+            </a>
+            <div class="controls" id="headerControls">
+                <a href="login.html" class="btn">🔐 Login</a>
+                <div class="theme-toggle" id="themeToggle"></div>
+                <a href="about.html" class="btn">ℹ️ About</a>
+                <a href="archive.html" class="btn">📚 Archive</a>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <input 
+                type="text" 
+                class="search-bar" 
+                id="searchBar" 
+                placeholder="🔍 Search for a word..."
+            >
+            <span class="search-icon">🔍</span>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+
+        <!-- Today's Word -->
+        <div class="word-section">
+            <div class="word-card">
+                <div class="word" id="word">Loading...</div>
+                <div class="phonetic" id="phonetic"></div>
+                <div class="pronunciation" id="pronunciation"></div>
+                <span class="part-of-speech-badge" id="partOfSpeech" style="display: none;"></span>
+                <div class="stats" id="stats"></div>
+            </div>
+            
+            <div class="meaning-card">
+                <div class="meaning" id="meaning"></div>
+                
+                <!-- Synonyms Section -->
+                <div class="syn-ant-section" id="synonymsSection" style="display: none;">
+                    <h3 class="syn-ant-title">📗 Synonyms</h3>
+                    <div class="syn-ant-list" id="synonyms"></div>
+                </div>
+                
+                <!-- Antonyms Section -->
+                <div class="syn-ant-section" id="antonymsSection" style="display: none;">
+                    <h3 class="syn-ant-title">📕 Antonyms</h3>
+                    <div class="syn-ant-list" id="antonyms"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trending Words -->
+        <div class="trending-section">
+            <h2 class="section-title">🔥 Trending Words</h2>
+            <div class="trending-tabs">
+                <div class="trending-tab active" onclick="switchTrending('week')">This Week</div>
+                <div class="trending-tab" onclick="switchTrending('month')">This Month</div>
+            </div>
+            <div id="trendingWeek" class="trending-list active">
+                <div id="weeklyTrending">Loading...</div>
+            </div>
+            <div id="trendingMonth" class="trending-list">
+                <div id="monthlyTrending">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Previous Words -->
+        <div class="previous-words-section">
+            <h2 class="section-title">📖 Previous Words</h2>
+            <div class="words-grid" id="previousWords">Loading...</div>
+        </div>
+
+        <!-- Suggestion Box -->
+        <div class="suggestion-jumbotron">
+            <div class="jumbotron-content">
+                <h2>💡 Have a Suggestion?</h2>
+                <p>Help us improve! Share your feedback, suggest new words, or report issues.</p>
+                <form id="suggestionForm" class="suggestion-form">
+                    <input 
+                        type="text" 
+                        id="suggestionName" 
+                        placeholder="Your Name (optional)"
+                        class="suggestion-input"
+                    >
+                    <input 
+                        type="email" 
+                        id="suggestionEmail" 
+                        placeholder="Your Email (optional)"
+                        class="suggestion-input"
+                    >
+                    <textarea 
+                        id="suggestionMessage" 
+                        placeholder="Your suggestion or feedback..."
+                        class="suggestion-textarea"
+                        required
+                    ></textarea>
+                    <button type="submit" class="suggestion-btn">Send Suggestion 📧</button>
+                </form>
+                <div id="suggestionStatus" class="suggestion-status"></div>
+                <p class="suggestion-note">Your feedback will be sent to <strong>site-reply@wotd.in</strong></p>
+            </div>
+        </div>
+
+        <!-- Newsletter Signup -->
+        <div class="newsletter">
+            <h2>📧 Get Daily Words in Your Inbox</h2>
+            <p>Never miss a word! Subscribe to receive our word of the day via email.</p>
+            <form class="newsletter-form" id="subscribeForm">
+                <input 
+                    type="email" 
+                    class="newsletter-input" 
+                    id="subscribeEmail"
+                    placeholder="Enter your email" 
+                    required
+                >
+                <button type="submit" class="newsletter-btn">Subscribe</button>
+            </form>
+            <div id="subscribeStatus" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>&copy; 2026 Word of the Day. All rights reserved.</p>
+            <p>Expand your vocabulary, one word at a time.</p>
+            <p id="timezoneInfo" style="font-size: 12px; margin-top: 10px;"></p>
+        </div>
+    </div>
+
+ <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- EmailJS (Optional) -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <!-- Your organized JavaScript -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+    <!-- <script src="js/theme.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/words.js"></script>
+    <script src="js/trending.js"></script>
+    <script src="js/stats.js"></script>
+    <script src="js/forms.js"></script>
+    <script src="js/main.js"></script> -->
+</body>
+</html>
