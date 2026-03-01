@@ -1,12 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word of the Day</title>
-    <link rel="icon" type="image/jpg" href="images/logo.jpg">
-    <link rel="stylesheet" href="css/style.css">
-</head>
 <body class="dark">
     <div class="container">
         <div class="header">
@@ -71,121 +62,68 @@
         </div>
     </div>
 
+    <!-- ONLY THESE SCRIPTS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-    console.log('🚀 Starting app...');
+    console.log('🚀 Starting...');
 
-    // Config
-    const CONFIG = {
-        url: "https://qzatavslhtkioivemwlk.supabase.co",
-        key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE"
-    };
-
-    // Initialize
     const { createClient } = window.supabase;
-    const supabase = createClient(CONFIG.url, CONFIG.key);
-    console.log('✅ Supabase initialized');
+    const sb = createClient(
+        "https://qzatavslhtkioivemwlk.supabase.co",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6YXRhdnNsaHRraW9pdmVtd2xrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MzIyMTYsImV4cCI6MjA4NjEwODIxNn0.LaNyj8T6VYGMMbuyX-Fg_6Fm6yIhPLTW0enYd6sNdGE"
+    );
 
     // Theme
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.body.className = savedTheme;
-    const themeToggle = document.getElementById('themeToggle');
-    if (savedTheme === 'dark') themeToggle.classList.add('active');
-    themeToggle.onclick = () => {
+    const theme = localStorage.getItem('theme') || 'dark';
+    document.body.className = theme;
+    const toggle = document.getElementById('themeToggle');
+    if (theme === 'dark') toggle.classList.add('active');
+    toggle.onclick = () => {
         const isDark = document.body.classList.contains('dark');
         document.body.className = isDark ? 'light' : 'dark';
-        themeToggle.classList.toggle('active');
+        toggle.classList.toggle('active');
         localStorage.setItem('theme', isDark ? 'light' : 'dark');
     };
 
-    // Load stats
+    // Stats
     async function loadStats() {
-        console.log('📊 Loading stats...');
+        console.log('📊 Stats...');
         
-        try {
-            const { data: words, error: e1 } = await supabase.from('words').select('id, views');
-            console.log('Words result:', words, e1);
-            
-            if (e1) {
-                console.error('❌ Words error:', e1);
-                document.getElementById('totalWords').textContent = '?';
-                document.getElementById('totalViews').textContent = '?';
-            } else {
-                const count = words ? words.length : 0;
-                const views = words ? words.reduce((sum, w) => sum + (w.views || 0), 0) : 0;
-                
-                console.log('✅ Words:', count, 'Views:', views);
-                
-                document.getElementById('totalWords').textContent = count;
-                document.getElementById('totalViews').textContent = views;
-            }
-            
-            const { data: subs, error: e2 } = await supabase.from('subscribers').select('id');
-            console.log('Subs result:', subs, e2);
-            
-            if (e2) {
-                console.error('❌ Subs error:', e2);
-                document.getElementById('totalSubscribers').textContent = '?';
-            } else {
-                const subCount = subs ? subs.length : 0;
-                console.log('✅ Subscribers:', subCount);
-                document.getElementById('totalSubscribers').textContent = subCount;
-            }
-            
-        } catch (err) {
-            console.error('❌ Stats failed:', err);
-        }
+        const { data: w } = await sb.from('words').select('id, views');
+        const { data: s } = await sb.from('subscribers').select('id');
+        
+        const wc = w ? w.length : 0;
+        const vc = w ? w.reduce((sum, x) => sum + (x.views || 0), 0) : 0;
+        const sc = s ? s.length : 0;
+        
+        console.log('Words:', wc, 'Views:', vc, 'Subs:', sc);
+        
+        document.getElementById('totalWords').textContent = wc;
+        document.getElementById('totalViews').textContent = vc;
+        document.getElementById('totalSubscribers').textContent = sc;
     }
 
-    // Load word
+    // Word
     async function loadWord() {
-        console.log('📝 Loading word...');
+        console.log('📝 Word...');
         
-        try {
-            const today = new Date().toISOString().split('T')[0];
-            console.log('Today:', today);
-            
-            const { data: words, error } = await supabase
-                .from('words')
-                .select('*')
-                .eq('scheduled_for', today)
-                .limit(1);
-            
-            console.log('Word result:', words, error);
-            
-            if (error) {
-                console.error('❌ Word error:', error);
-                document.getElementById('word').textContent = 'Error';
-                document.getElementById('meaning').textContent = error.message;
-                return;
-            }
-            
-            if (!words || words.length === 0) {
-                console.log('No word for today, getting latest...');
-                const { data: latest } = await supabase
-                    .from('words')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(1);
-                
-                if (!latest || latest.length === 0) {
-                    document.getElementById('word').textContent = 'No Words Yet';
-                    document.getElementById('meaning').textContent = 'Add some words in admin!';
-                    return;
-                }
-                
-                displayWord(latest[0]);
-            } else {
-                displayWord(words[0]);
-            }
-            
-        } catch (err) {
-            console.error('❌ Word failed:', err);
+        const today = new Date().toISOString().split('T')[0];
+        let { data } = await sb.from('words').select('*').eq('scheduled_for', today).limit(1);
+        
+        if (!data || !data[0]) {
+            const r = await sb.from('words').select('*').order('created_at', {ascending: false}).limit(1);
+            data = r.data;
         }
-    }
-
-    function displayWord(word) {
-        console.log('Displaying:', word.word);
+        
+        if (!data || !data[0]) {
+            document.getElementById('word').textContent = 'No Words';
+            document.getElementById('meaning').textContent = 'Add words in admin panel';
+            return;
+        }
+        
+        const word = data[0];
+        console.log('Got word:', word.word);
+        
         document.getElementById('word').textContent = word.word;
         document.getElementById('meaning').textContent = word.meaning;
         document.getElementById('phonetic').textContent = word.phonetic || '';
@@ -196,21 +134,26 @@
             document.getElementById('partOfSpeech').style.display = 'inline-block';
         }
         
-        document.getElementById('stats').innerHTML = `
-            <div class="stat-item">👁️ ${word.views || 0} views</div>
-        `;
+        if (word.synonyms && word.synonyms.length > 0) {
+            document.getElementById('synonyms').innerHTML = word.synonyms.map(x => `<span class="syn-ant-tag">${x}</span>`).join('');
+            document.getElementById('synonymsSection').style.display = 'block';
+        }
+        
+        if (word.antonyms && word.antonyms.length > 0) {
+            document.getElementById('antonyms').innerHTML = word.antonyms.map(x => `<span class="syn-ant-tag antonym">${x}</span>`).join('');
+            document.getElementById('antonymsSection').style.display = 'block';
+        }
+        
+        document.getElementById('stats').innerHTML = `<div class="stat-item">👁️ ${word.views || 0} views</div>`;
     }
 
-    // Timezone
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    document.getElementById('timezoneInfo').textContent = `🌍 ${tz}`;
+    // TZ
+    document.getElementById('timezoneInfo').textContent = '🌍 ' + Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     // Run
-    (async () => {
-        await loadStats();
-        await loadWord();
-        console.log('✅ Done!');
-    })();
+    loadStats();
+    loadWord();
+    console.log('✅ Done!');
     </script>
 </body>
 </html>
