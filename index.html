@@ -9,17 +9,14 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/main.css">
 </head>
 <body class="bg-dark text-light">
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
         <div class="container">
-            <a class="navbar-brand" href="index.html">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
                 <img src="images/logo.jpg" alt="Logo" width="40" height="40" class="rounded-circle me-2">
-                Word of the Day
+                <span class="fw-bold">Word of the Day</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -27,7 +24,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <span class="nav-link" id="wordCount">
+                        <span class="nav-link">
                             <i class="bi bi-book"></i> <span id="totalWords">...</span> Words
                         </span>
                     </li>
@@ -57,7 +54,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <button class="btn btn-sm btn-outline-light" id="themeToggle">
+                        <button class="btn btn-sm btn-outline-light ms-2" id="themeToggle">
                             <i class="bi bi-moon-fill"></i>
                         </button>
                     </li>
@@ -70,29 +67,58 @@
     <div class="container my-5">
         <div class="row justify-content-center">
             <div class="col-lg-8">
-                <div class="card bg-gradient text-white shadow-lg">
+                <!-- Word Card -->
+                <div class="card text-white shadow-lg mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                     <div class="card-body text-center p-5">
-                        <h1 class="display-1 fw-bold" id="word">Loading...</h1>
-                        <p class="lead" id="phonetic"></p>
-                        <p class="text-white-50" id="pronunciation"></p>
+                        <h1 class="display-1 fw-bold mb-3" id="word">Loading...</h1>
+                        <p class="lead mb-2" id="phonetic"></p>
+                        <p class="text-white-50 mb-3" id="pronunciation"></p>
                         <span class="badge bg-light text-dark" id="partOfSpeech" style="display: none;"></span>
                     </div>
                 </div>
 
-                <div class="card bg-dark text-white mt-4 shadow">
+                <!-- Meaning Card -->
+                <div class="card bg-dark text-white shadow border-secondary">
                     <div class="card-body p-4">
-                        <h3 class="card-title">Meaning</h3>
-                        <p class="lead" id="meaning"></p>
+                        <h3 class="card-title mb-3">
+                            <i class="bi bi-book-half text-primary"></i> Meaning
+                        </h3>
+                        <p class="lead" id="meaning">Loading meaning...</p>
                         
+                        <!-- Synonyms -->
                         <div id="synonymsSection" style="display: none;" class="mt-4">
-                            <h5><i class="bi bi-bookmark-check text-success"></i> Synonyms</h5>
+                            <h5 class="mb-3">
+                                <i class="bi bi-bookmark-check text-success"></i> Synonyms
+                            </h5>
                             <div id="synonyms"></div>
                         </div>
                         
+                        <!-- Antonyms -->
                         <div id="antonymsSection" style="display: none;" class="mt-4">
-                            <h5><i class="bi bi-bookmark-x text-danger"></i> Antonyms</h5>
+                            <h5 class="mb-3">
+                                <i class="bi bi-bookmark-x text-danger"></i> Antonyms
+                            </h5>
                             <div id="antonyms"></div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="row g-3 mt-4">
+                    <div class="col-md-4">
+                        <a href="search.html" class="btn btn-outline-light w-100">
+                            <i class="bi bi-search"></i> Search Words
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="archive.html" class="btn btn-outline-light w-100">
+                            <i class="bi bi-archive"></i> View Archive
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="suggest.html" class="btn btn-outline-light w-100">
+                            <i class="bi bi-lightbulb"></i> Suggest Word
+                        </a>
                     </div>
                 </div>
             </div>
@@ -100,23 +126,17 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-dark text-center text-white-50 py-4 mt-5">
+    <footer class="bg-dark text-center text-white-50 py-4 mt-5 border-top border-secondary">
         <div class="container">
-            <p>&copy; 2026 Word of the Day. All rights reserved.</p>
-            <p id="timezoneInfo"></p>
+            <p class="mb-1">&copy; 2026 Word of the Day. All rights reserved.</p>
+            <p class="small mb-0" id="timezoneInfo"></p>
         </div>
     </footer>
 
-    <!-- Bootstrap JS -->
+    <!-- SCRIPTS - ORDER IS CRITICAL! -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Config -->
     <script src="js/config.js"></script>
-    
-    <!-- Home Logic -->
     <script src="js/home.js"></script>
 </body>
 </html>
