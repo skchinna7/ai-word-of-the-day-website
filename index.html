@@ -1,152 +1,122 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word of the Day - Learn New Words Daily</title>
+    <title>Word of the Day</title>
     <link rel="icon" type="image/jpg" href="images/logo.jpg">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="css/main.css">
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous"> -->
 </head>
-<body class="dark">
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <a href="index.html" class="logo-container">
-                <img src="images/logo.jpg" alt="Word of the Day Logo" class="logo-image">
-                <div>
-                    <div class="logo-text">Word of the Day</div>
-                    <span class="logo-tagline">Expand your vocabulary daily</span>
-                </div>
+<body class="bg-dark text-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-gradient">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <img src="images/logo.jpg" alt="Logo" width="40" height="40" class="rounded-circle me-2">
+                Word of the Day
             </a>
-            <!-- Word Count Badge -->
-            <div class="word-count-display">
-                <div class="count-badge">
-                    <span class="count-number" id="totalWords">...</span>
-                    <span class="count-label">Words Available</span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="nav-link" id="wordCount">
+                            <i class="bi bi-book"></i> <span id="totalWords">...</span> Words
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="search.html">
+                            <i class="bi bi-search"></i> Search
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="trending.html">
+                            <i class="bi bi-fire"></i> Trending
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="archive.html">
+                            <i class="bi bi-archive"></i> Archive
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="suggest.html">
+                            <i class="bi bi-lightbulb"></i> Suggest
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html">
+                            <i class="bi bi-info-circle"></i> About
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-sm btn-outline-light" id="themeToggle">
+                            <i class="bi bi-moon-fill"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Today's Word -->
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card bg-gradient text-white shadow-lg">
+                    <div class="card-body text-center p-5">
+                        <h1 class="display-1 fw-bold" id="word">Loading...</h1>
+                        <p class="lead" id="phonetic"></p>
+                        <p class="text-white-50" id="pronunciation"></p>
+                        <span class="badge bg-light text-dark" id="partOfSpeech" style="display: none;"></span>
+                    </div>
+                </div>
+
+                <div class="card bg-dark text-white mt-4 shadow">
+                    <div class="card-body p-4">
+                        <h3 class="card-title">Meaning</h3>
+                        <p class="lead" id="meaning"></p>
+                        
+                        <div id="synonymsSection" style="display: none;" class="mt-4">
+                            <h5><i class="bi bi-bookmark-check text-success"></i> Synonyms</h5>
+                            <div id="synonyms"></div>
+                        </div>
+                        
+                        <div id="antonymsSection" style="display: none;" class="mt-4">
+                            <h5><i class="bi bi-bookmark-x text-danger"></i> Antonyms</h5>
+                            <div id="antonyms"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="controls" id="headerControls">
-                <a href="login.html" class="btn">🔐 Login</a>
-                <div class="theme-toggle" id="themeToggle"></div>
-                <a href="about.html" class="btn">ℹ️ About</a>
-                <a href="archive.html" class="btn">📚 Archive</a>
-            </div>
-        </div>
-
-        <!-- Search Bar -->
-        <div class="search-container">
-            <input type="text" class="search-bar" id="searchBar" placeholder="🔍 Search for a word...">
-            <span class="search-icon">🔍</span>
-        </div>
-        <div class="search-results" id="searchResults"></div>
-
-        <!-- Today's Word -->
-        <div class="word-section">
-            <div class="word-card">
-                <div class="word" id="word">Loading...</div>
-                <div class="phonetic" id="phonetic"></div>
-                <div class="pronunciation" id="pronunciation"></div>
-                <span class="part-of-speech-badge" id="partOfSpeech" style="display: none;"></span>
-                <div class="stats" id="stats"></div>
-            </div>
-            
-            <div class="meaning-card">
-                <div class="meaning" id="meaning"></div>
-                
-                <div class="syn-ant-section" id="synonymsSection" style="display: none;">
-                    <h3 class="syn-ant-title">📗 Synonyms</h3>
-                    <div class="syn-ant-list" id="synonyms"></div>
-                </div>
-                
-                <div class="syn-ant-section" id="antonymsSection" style="display: none;">
-                    <h3 class="syn-ant-title">📕 Antonyms</h3>
-                    <div class="syn-ant-list" id="antonyms"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Trending Words -->
-        <div class="trending-section">
-            <h2 class="section-title">🔥 Trending Words</h2>
-            <div class="trending-tabs">
-                <div class="trending-tab active" onclick="switchTrending('week')">This Week</div>
-                <div class="trending-tab" onclick="switchTrending('month')">This Month</div>
-            </div>
-            <div id="trendingWeek" class="trending-list active">
-                <div id="weeklyTrending">Loading...</div>
-            </div>
-            <div id="trendingMonth" class="trending-list">
-                <div id="monthlyTrending">Loading...</div>
-            </div>
-        </div>
-
-        <!-- Previous Words -->
-        <div class="previous-words-section">
-            <h2 class="section-title">📖 Previous Words</h2>
-            <div class="words-grid" id="previousWords">Loading...</div>
-        </div>
-
-        <!-- Suggestion Box -->
-        <div class="suggestion-jumbotron">
-            <div class="jumbotron-content">
-                <h2>💡 Have a Suggestion?</h2>
-                <p>Help us improve! Share your feedback, suggest new words, or report issues.</p>
-                <form id="suggestionForm" class="suggestion-form">
-                    <input 
-                        type="text" 
-                        id="suggestionName" 
-                        placeholder="Your Name (optional)"
-                        class="suggestion-input"
-                    >
-                    <input 
-                        type="email" 
-                        id="suggestionEmail" 
-                        placeholder="Your Email (optional)"
-                        class="suggestion-input"
-                    >
-                    <textarea 
-                        id="suggestionMessage" 
-                        placeholder="Your suggestion or feedback..."
-                        class="suggestion-textarea"
-                        required
-                    ></textarea>
-                    <button type="submit" class="suggestion-btn">Send Suggestion 📧</button>
-                </form>
-                <div id="suggestionStatus" class="suggestion-status"></div>
-                <p class="suggestion-note">Your feedback will be sent to <strong>site-reply@wotd.in</strong></p>
-            </div>
-        </div>
-
-        <!-- Newsletter Signup -->
-        <div class="newsletter">
-            <h2>📧 Get Daily Words in Your Inbox</h2>
-            <p>Never miss a word! Subscribe to receive our word of the day via email.</p>
-            <form class="newsletter-form" id="subscribeForm">
-                <input 
-                    type="email" 
-                    class="newsletter-input" 
-                    id="subscribeEmail"
-                    placeholder="Enter your email" 
-                    required
-                >
-                <button type="submit" class="newsletter-btn">Subscribe</button>
-            </form>
-            <div id="subscribeStatus" style="margin-top: 15px;"></div>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer">
-            <p>&copy; 2026 Word of the Day. All rights reserved.</p>
-            <p>Expand your vocabulary, one word at a time.</p>
-            <p id="timezoneInfo" style="font-size: 12px; margin-top: 10px;"></p>
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Footer -->
+    <footer class="bg-dark text-center text-white-50 py-4 mt-5">
+        <div class="container">
+            <p>&copy; 2026 Word of the Day. All rights reserved.</p>
+            <p id="timezoneInfo"></p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/main.js"></script>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script> -->
+    
+    <!-- Config -->
+    <script src="js/config.js"></script>
+    
+    <!-- Home Logic -->
+    <script src="js/home.js"></script>
 </body>
 </html>
