@@ -244,3 +244,47 @@ body.light .stat-box {
         font-size: 36px;
     }
 }
+
+/* Filter buttons */
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    border: 2px solid #667eea;
+    background: transparent;
+    color: #667eea;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.filter-btn:hover {
+    background: #667eea;
+    color: white;
+}
+
+.filter-btn.active {
+    background: #667eea;
+    color: white;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .filter-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .filter-btn {
+        flex: 1;
+        min-width: 60px;
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+}
+
